@@ -30,3 +30,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Ignore trash Mac OSX files
+*.DS_Store
