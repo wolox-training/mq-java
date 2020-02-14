@@ -27,23 +27,48 @@ public class BookController {
         return bookRepository.findAll();
     }
 
+    /**
+     * Find by title book.
+     *
+     * @param bookTitle the book title
+     * @return the book
+     */
     @GetMapping("/title/{bookTitle}")
     public Book findByTitle(@PathVariable String bookTitle) {
         return bookRepository.findByTitle(bookTitle);
     }
 
+    /**
+     * Find one book.
+     *
+     * @throws BookNotFoundException
+     * @param id the id
+     * @return the book
+     */
     @GetMapping("/{id}")
     public Book findOne(@PathVariable Long id) {
         return bookRepository.findById(id)
             .orElseThrow(BookNotFoundException::new);
     }
 
+    /**
+     * Create book.
+     *
+     * @param book the book
+     * @return the book
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Book create(@RequestBody Book book) {
         return bookRepository.save(book);
     }
 
+    /**
+     * Delete an existing book.
+     *
+     * @throws BookNotFoundException
+     * @param id the path variable id of the book to find and delete
+     */
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         bookRepository.findById(id)
@@ -51,6 +76,15 @@ public class BookController {
         bookRepository.deleteById(id);
     }
 
+    /**
+     * Updates an existing book.
+     *
+     * @throws BookIdMismatchException if pathVariable id does not match body id.
+     * @throws BookNotFoundException
+     * @param book the request updated book to save
+     * @param id   the path variable for the book id
+     * @return the saved updated book
+     */
     @PutMapping("/{id}")
     public Book updateBook(@RequestBody Book book, @PathVariable Long id) {
         if (book.getId() != id) {
