@@ -9,6 +9,11 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 
+/**
+ * Book is the main entity we'll be using for the java training
+ *
+ * @author tinoq-woloxer
+ */
 @Entity @Data
 public class Book {
     @Id
