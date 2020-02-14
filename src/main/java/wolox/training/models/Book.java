@@ -16,6 +16,7 @@ public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+    public long getId() { return id; }
 
     @Column
     private String genre;
