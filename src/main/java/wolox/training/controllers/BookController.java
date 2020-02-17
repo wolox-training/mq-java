@@ -29,6 +29,12 @@ public class BookController {
     @Autowired
     private BookRepository bookRepository;
 
+    /**
+     * Find books.
+     *
+     * @param title of the book. Optional
+     * @return the book
+     */
     @GetMapping
     public Iterable findAll(@RequestParam Optional<String> title) {
         if (title.isPresent() && !title.get().isEmpty())
@@ -37,7 +43,7 @@ public class BookController {
     };
 
     /**
-     * Find one book.
+     * Find one book by id.
      *
      * @throws BookNotFoundException
      * @param id the id
