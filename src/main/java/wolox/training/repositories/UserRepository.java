@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import wolox.training.models.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(@NotNull String title);
+    Optional<User> findByUsername(@NotNull String username);
 }
