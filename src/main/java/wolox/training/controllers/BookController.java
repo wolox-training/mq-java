@@ -1,5 +1,9 @@
 package wolox.training.controllers;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,13 +16,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import wolox.training.exceptions.BookIdMismatchException;
+import wolox.training.exceptions.IdMismatchException;
 import wolox.training.exceptions.BookNotFoundException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 
 @RestController
 @RequestMapping("/api/books")
+@Api
 public class BookController {
     @Autowired
     private BookRepository bookRepository;
@@ -80,16 +85,21 @@ public class BookController {
     /**
      * Updates an existing book.
      *
-     * @throws BookIdMismatchException if pathVariable id does not match body id.
+     * @throws IdMismatchException if pathVariable id does not match body id.
      * @throws BookNotFoundException
      * @param book the request updated book to save
      * @param id   the path variable for the book id
      * @return the saved updated book
      */
     @PutMapping("/{id}")
+    @ApiOperation(value = "Updates all the fields of a given book", response = Book.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Book successfully updated"),
+        @ApiResponse(code = 404, message = "Book not found")
+    })
     public Book updateBook(@RequestBody Book book, @PathVariable Long id) {
         if (book.getId() != id) {
-            throw new BookIdMismatchException();
+            throw new IdMismatchException();
         }
         bookRepository.findById(id)
             .orElseThrow(BookNotFoundException::new);

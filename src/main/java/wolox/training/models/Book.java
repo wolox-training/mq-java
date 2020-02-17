@@ -1,5 +1,6 @@
 package wolox.training.models;
 
+import io.swagger.annotations.ApiModel;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +22,7 @@ import sun.jvm.hotspot.debugger.linux.sparc.LinuxSPARCThreadContext;
  * @author tinoq-woloxer
  */
 @Entity @Data
+@ApiModel(description = "Model of a book that may be assigned to users")
 public class Book {
     @Id
     @Setter(AccessLevel.PRIVATE)

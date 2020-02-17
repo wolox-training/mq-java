@@ -1,5 +1,6 @@
 package wolox.training.models;
 
+import io.swagger.annotations.ApiModel;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import wolox.training.exceptions.BookNotOwnedException;
 @Entity
 @Data
 @Table(name = "users")
+@ApiModel(description = "Model of a user that may own books")
 public class User {
 
     @Id

@@ -1,5 +1,9 @@
 package wolox.training.controllers;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +24,7 @@ import wolox.training.repositories.UserRepository;
 
 @RestController
 @RequestMapping("/api/users")
+@Api
 public class UserController {
     @Autowired
     private UserRepository userRepository;
@@ -84,7 +89,7 @@ public class UserController {
     /**
      * Updates an existing user.
      *
-     * @throws UserIdMismatchException if pathVariable id does not match body id.
+     * @throws IdMismatchException if pathVariable id does not match body id.
      * @throws UserNotFoundException
      * @param user the request updated user to save
      * @param id   the path variable for the user id
@@ -93,7 +98,7 @@ public class UserController {
     @PutMapping("/{id}")
     public User updateUser(@RequestBody User user, @PathVariable Long id) {
         if (user.getId() != id) {
-            throw new UserIdMismatchException();
+            throw new IdMismatchException();
         }
         userRepository.findById(id)
             .orElseThrow(UserNotFoundException::new);
@@ -111,6 +116,13 @@ public class UserController {
      * @throws BookAlreadyOwnedException
      * @return the user
      */
+    @ApiOperation(value = "Asigns a book to a user", response = User.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Book successfully assigned to user"),
+        @ApiResponse(code = 404, message = "User not found"),
+        @ApiResponse(code = 404, message = "Book not found"),
+        @ApiResponse(code = 400, message = "Book already owned exception")
+    })
     @PostMapping("/{userId}/assignBook/{bookId}")
     public User assignBook(@PathVariable Long userId, @PathVariable Long bookId) {
         User user = findOne(userId);
@@ -130,6 +142,12 @@ public class UserController {
      * @return the user
      */
     @PostMapping("/{userId}/deassignBook/{bookId}")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Book successfully assigned to user"),
+        @ApiResponse(code = 404, message = "User not found"),
+        @ApiResponse(code = 404, message = "Book not found"),
+        @ApiResponse(code = 400, message = "Book not owned exception")
+    })
     public User deassignBook(@PathVariable Long userId, @PathVariable Long bookId) {
         User user = findOne(userId);
         Book book = bookController.findOne(bookId);
