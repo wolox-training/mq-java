@@ -2,12 +2,8 @@ package wolox.training;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication(scanBasePackages = {"wolox.training"})
-@EnableJpaRepositories(basePackages = {"wolox.training.repositories"})
-@EntityScan(basePackages =  {"wolox.training.models"})
+@SpringBootApplication
 public class TrainingApplication {
 
 	public static void main(String[] args) {
