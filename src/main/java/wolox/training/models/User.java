@@ -1,5 +1,7 @@
 package wolox.training.models;
 
+import static wolox.training.utils.Utils.*;
+
 import io.swagger.annotations.ApiModel;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -34,12 +36,21 @@ public class User {
 
     @Column(nullable = false)
     private String username;
+    public void setUsername(String username){
+        this.username = checkString(username, "username");
+    }
 
     @Column(nullable = false)
     private String name;
+    public void setName(String name){
+        this.name = checkString(name, "name");
+    }
 
     @Column(nullable = false)
     private LocalDate birthDate;
+    public void setBirthDate(LocalDate birthDate){
+        this.birthDate = checkLocalDate(birthDate, "birthDate");
+    }
 
     @ManyToMany
     @JoinTable(
