@@ -1,13 +1,19 @@
 package wolox.training.models;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
+import sun.jvm.hotspot.debugger.linux.sparc.LinuxSPARCThreadContext;
 
 /**
  * Book is the main entity we'll be using for the java training
@@ -47,5 +53,4 @@ public class Book {
 
     @Column(nullable = false)
     private String isbn;
-
 }
