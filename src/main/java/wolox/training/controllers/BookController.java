@@ -1,5 +1,6 @@
 package wolox.training.controllers;
 
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,7 +35,7 @@ public class BookController {
      * @return the book
      */
     @GetMapping("/title/{bookTitle}")
-    public Book findByTitle(@PathVariable String bookTitle) {
+    public Optional<Book> findByTitle(@PathVariable String bookTitle) {
         return bookRepository.findByTitle(bookTitle);
     }
 
