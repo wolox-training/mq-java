@@ -24,6 +24,12 @@ public class BookController {
     @Autowired
     private BookRepository bookRepository;
 
+    /**
+     * Find all books.
+     *
+     * @param title optional query param to find by the book's title
+     * @return the found books
+     */
     @GetMapping
     public Iterable findAll(@RequestParam String title) {
         if (title != null && !title.isEmpty())
@@ -63,6 +69,7 @@ public class BookController {
      * @param id the path variable id of the book to find and delete
      */
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         bookRepository.findById(id)
             .orElseThrow(BookNotFoundException::new);
@@ -79,13 +86,12 @@ public class BookController {
      * @return the saved updated book
      */
     @PutMapping("/{id}")
-    public Book updateBook(@RequestBody Book book, @PathVariable Long id) {
+    public void updateBook(@RequestBody Book book, @PathVariable Long id) {
         if (book.getId() != id) {
             throw new BookIdMismatchException();
         }
         bookRepository.findById(id)
             .orElseThrow(BookNotFoundException::new);
-        return bookRepository.save(book);
+        bookRepository.save(book);
     }
-
 }
