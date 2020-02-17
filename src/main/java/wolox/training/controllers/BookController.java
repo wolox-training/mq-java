@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.BookIdMismatchException;
@@ -24,20 +25,11 @@ public class BookController {
     private BookRepository bookRepository;
 
     @GetMapping
-    public Iterable findAll() {
+    public Iterable findAll(@RequestParam Optional<String> title) {
+        if (title.isPresent() && !title.get().isEmpty())
+            return bookRepository.findByTitle(title.get());
         return bookRepository.findAll();
-    }
-
-    /**
-     * Find by title book.
-     *
-     * @param bookTitle the book title
-     * @return the book
-     */
-    @GetMapping("/title/{bookTitle}")
-    public Optional<Book> findByTitle(@PathVariable String bookTitle) {
-        return bookRepository.findByTitle(bookTitle);
-    }
+    };
 
     /**
      * Find one book.
