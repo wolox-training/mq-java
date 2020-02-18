@@ -1,6 +1,5 @@
 package wolox.training.controllers;
 
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import wolox.training.exceptions.BookIdMismatchException;
 import wolox.training.exceptions.BookNotFoundException;
+import wolox.training.exceptions.IdMismatchException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 
@@ -24,10 +23,16 @@ public class BookController {
     @Autowired
     private BookRepository bookRepository;
 
+    /**
+     * Find all books.
+     *
+     * @param title optional query param to find by the book's title
+     * @return the found books
+     */
     @GetMapping
-    public Iterable findAll(@RequestParam Optional<String> title) {
-        if (title.isPresent() && !title.get().isEmpty())
-            return bookRepository.findByTitle(title.get());
+    public Iterable findAll(@RequestParam String title) {
+        if (title != null && !title.isEmpty())
+            return bookRepository.findByTitle(title);
         return bookRepository.findAll();
     };
 
@@ -63,6 +68,7 @@ public class BookController {
      * @param id the path variable id of the book to find and delete
      */
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         bookRepository.findById(id)
             .orElseThrow(BookNotFoundException::new);
@@ -72,20 +78,20 @@ public class BookController {
     /**
      * Updates an existing book.
      *
-     * @throws BookIdMismatchException if pathVariable id does not match body id.
+     * @throws IdMismatchException if pathVariable id does not match body id.
      * @throws BookNotFoundException
      * @param book the request updated book to save
      * @param id   the path variable for the book id
      * @return the saved updated book
      */
     @PutMapping("/{id}")
-    public Book updateBook(@RequestBody Book book, @PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateBook(@RequestBody Book book, @PathVariable Long id) {
         if (book.getId() != id) {
-            throw new BookIdMismatchException();
+            throw new IdMismatchException("book");
         }
         bookRepository.findById(id)
             .orElseThrow(BookNotFoundException::new);
-        return bookRepository.save(book);
+        bookRepository.save(book);
     }
-
 }
