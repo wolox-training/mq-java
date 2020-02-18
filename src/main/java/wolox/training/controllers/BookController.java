@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,15 +29,15 @@ public class BookController {
     private BookRepository bookRepository;
 
     /**
-     * Find books.
+     * Find all books.
      *
-     * @param title of the book. Optional
-     * @return the book
+     * @param title optional query param to find by the book's title
+     * @return the found books
      */
     @GetMapping
-    public Iterable findAll(@RequestParam Optional<String> title) {
-        if (title.isPresent() && !title.get().isEmpty())
-            return bookRepository.findByTitle(title.get());
+    public Iterable findAll(@RequestParam String title) {
+        if (title != null && !title.isEmpty())
+            return bookRepository.findByTitle(title);
         return bookRepository.findAll();
     };
 
@@ -74,6 +73,7 @@ public class BookController {
      * @param id the path variable id of the book to find and delete
      */
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         bookRepository.findById(id)
             .orElseThrow(BookNotFoundException::new);
@@ -95,13 +95,13 @@ public class BookController {
         @ApiResponse(code = 200, message = "Book successfully updated"),
         @ApiResponse(code = 404, message = "Book not found")
     })
-    public Book updateBook(@RequestBody Book book, @PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateBook(@RequestBody Book book, @PathVariable Long id) {
         if (book.getId() != id) {
-            throw new IdMismatchException();
+            throw new IdMismatchException("book");
         }
         bookRepository.findById(id)
             .orElseThrow(BookNotFoundException::new);
-        return bookRepository.save(book);
+        bookRepository.save(book);
     }
-
 }
