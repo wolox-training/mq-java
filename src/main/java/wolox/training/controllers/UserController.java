@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,10 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.BookAlreadyOwnedException;
-import wolox.training.exceptions.BookNotFoundException;
 import wolox.training.exceptions.BookNotOwnedException;
 import wolox.training.exceptions.IdMismatchException;
-import wolox.training.exceptions.UserNotFoundException;
+import wolox.training.exceptions.EntityNotFoundException;
 import wolox.training.models.Book;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
@@ -52,14 +52,16 @@ public class UserController {
     /**
      * Find one user.
      *
-     * @throws UserNotFoundException
+     * @throws EntityNotFoundException
      * @param id the id
      * @return the user
      */
     @GetMapping("/{id}")
     public User findOne(@PathVariable Long id) {
-        return userRepository.findById(id)
-            .orElseThrow(UserNotFoundException::new);
+        Optional<User> user = userRepository.findById(id);
+        if (!user.isPresent())
+            throw new EntityNotFoundException(User.class);
+        return user.get();
     }
 
     /**
@@ -77,14 +79,15 @@ public class UserController {
     /**
      * Delete an existing user.
      *
-     * @throws UserNotFoundException
+     * @throws EntityNotFoundException
      * @param id the path variable id of the user to find and delete
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        userRepository.findById(id)
-            .orElseThrow(UserNotFoundException::new);
+        Optional<User> user = userRepository.findById(id);
+        if (!user.isPresent())
+            throw new EntityNotFoundException(User.class);
         userRepository.deleteById(id);
     }
 
@@ -92,7 +95,7 @@ public class UserController {
      * Updates an existing user.
      *
      * @throws IdMismatchException if pathVariable id does not match body id.
-     * @throws UserNotFoundException
+     * @throws EntityNotFoundException
      * @param user the request updated user to save
      * @param id   the path variable for the user id
      * @return the saved updated user
@@ -103,8 +106,9 @@ public class UserController {
         if (user.getId() != id) {
             throw new IdMismatchException("user");
         }
-        userRepository.findById(id)
-            .orElseThrow(UserNotFoundException::new);
+        Optional<User> dbUser = userRepository.findById(id);
+        if (!dbUser.isPresent())
+            throw new EntityNotFoundException(User.class);
         userRepository.save(user);
     }
 
@@ -114,8 +118,7 @@ public class UserController {
      *
      * @param userId the user id
      * @param bookId the book id
-     * @throws UserNotFoundException
-     * @throws BookNotFoundException
+     * @throws EntityNotFoundException
      * @throws BookAlreadyOwnedException
      * @return the user
      */
@@ -140,8 +143,7 @@ public class UserController {
      *
      * @param userId the user's id
      * @param bookId the user's id
-     * @throws UserNotFoundException
-     * @throws BookNotFoundException
+     * @throws EntityNotFoundException
      * @throws BookNotOwnedException
      * @return the user
      */
