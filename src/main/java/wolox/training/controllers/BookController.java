@@ -36,7 +36,7 @@ public class BookController {
      * @return the found books
      */
     @GetMapping
-    public Iterable findAll(@RequestParam String title) {
+    public Iterable findAll(@RequestParam(required = false) String title) {
         if (title != null && !title.isEmpty())
             return bookRepository.findByTitle(title);
         return bookRepository.findAll();

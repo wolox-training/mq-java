@@ -43,7 +43,7 @@ public class UserController {
      * @return the found users
      */
     @GetMapping
-    public Iterable findAll(@RequestParam String username) {
+    public Iterable findAll(@RequestParam(required = false) String username) {
         if (username != null && !username.isEmpty())
             return userRepository.findByUsername(username);
         return userRepository.findAll();
