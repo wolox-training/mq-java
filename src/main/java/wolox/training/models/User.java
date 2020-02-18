@@ -52,11 +52,11 @@ public class User {
 
     public void assignBook(Book book) {
         if (!books.add(book))
-            throw new BookAlreadyOwnedException();
+            throw new BookAlreadyOwnedException(this, book);
     }
 
     public void deassignBook(Book book) {
         if (!books.remove(book))
-            throw new BookNotOwnedException();
+            throw new BookNotOwnedException(this, book);
     }
 }

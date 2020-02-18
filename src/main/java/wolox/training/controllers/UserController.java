@@ -1,6 +1,5 @@
 package wolox.training.controllers;
 
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -83,7 +82,7 @@ public class UserController {
     /**
      * Updates an existing user.
      *
-     * @throws UserIdMismatchException if pathVariable id does not match body id.
+     * @throws IdMismatchException if pathVariable id does not match body id.
      * @throws UserNotFoundException
      * @param user the request updated user to save
      * @param id   the path variable for the user id
@@ -93,7 +92,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateUser(@RequestBody User user, @PathVariable Long id) {
         if (user.getId() != id) {
-            throw new UserIdMismatchException();
+            throw new IdMismatchException("user");
         }
         userRepository.findById(id)
             .orElseThrow(UserNotFoundException::new);
