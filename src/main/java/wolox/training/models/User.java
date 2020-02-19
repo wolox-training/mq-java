@@ -2,6 +2,7 @@ package wolox.training.models;
 
 import static wolox.training.utils.Utils.*;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.annotations.ApiModel;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -19,14 +20,17 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Setter;
 import wolox.training.exceptions.BookAlreadyOwnedException;
 import wolox.training.exceptions.BookNotOwnedException;
+import wolox.training.utils.LocalDateSerializer;
 
 @Entity
 @Data
 @Table(name = "users")
 @ApiModel(description = "Model of a user that may own books")
+@EqualsAndHashCode
 public class User {
     private User(){}
 
@@ -54,6 +58,7 @@ public class User {
     }
 
     @Column(nullable = false)
+    @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate birthDate;
     public void setBirthDate(LocalDate birthDate){
         this.birthDate = checkLocalDate(birthDate, "birthDate");

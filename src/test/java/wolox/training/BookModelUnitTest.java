@@ -18,7 +18,7 @@ public class BookModelUnitTest {
     }
 
     @Test
-    public void whenTryingToSetNullIsb_thenItFails() {
+    public void whenTryingToSetNullIsbn_thenItFails() {
         Book book = getDefaultBook("Nice little book");
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             book.setIsbn(null);

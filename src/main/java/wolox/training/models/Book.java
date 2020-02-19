@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Setter;
 
 /**
@@ -21,6 +22,7 @@ import lombok.Setter;
 @Entity
 @Data
 @ApiModel(description = "Model of a book that may be assigned to users")
+@EqualsAndHashCode
 public class Book {
     private Book(){}
 
