@@ -3,8 +3,8 @@ package wolox.training.repositories;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
-import wolox.training.models.Book;
+import wolox.training.models.User;
 
-public interface BookRepository extends JpaRepository<Book, Long> {
-    List<Book> findByTitle(@NotNull String title);
+public interface UserRepository extends JpaRepository<User, Long> {
+    List<User> findByUsername(@NotNull String username);
 }
