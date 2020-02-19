@@ -22,6 +22,28 @@ import lombok.Setter;
 @Data
 @ApiModel(description = "Model of a book that may be assigned to users")
 public class Book {
+    private Book(){}
+
+    public Book(
+        String title,
+        String author,
+        String image,
+        String subtitle,
+        String publisher,
+        String year,
+        int pages,
+        String isbn
+    ){
+        setTitle(title);
+        setAuthor(author);
+        setImage(image);
+        setSubtitle(subtitle);
+        setPublisher(publisher);
+        setYear(year);
+        setPages(pages);
+        setIsbn(isbn);
+    }
+
     @Id
     @Setter(AccessLevel.PRIVATE)
     @GeneratedValue(strategy = GenerationType.AUTO)

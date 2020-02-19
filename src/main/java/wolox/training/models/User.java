@@ -28,6 +28,13 @@ import wolox.training.exceptions.BookNotOwnedException;
 @Table(name = "users")
 @ApiModel(description = "Model of a user that may own books")
 public class User {
+    private User(){}
+
+    public User(String name, String username, LocalDate birthDate){
+        setUsername(username);
+        setName(name);
+        setBirthDate(birthDate);
+    }
 
     @Id
     @Setter(AccessLevel.PRIVATE)
@@ -57,6 +64,7 @@ public class User {
         name = "users_books",
         joinColumns = @JoinColumn(name = "users_id"),
         inverseJoinColumns = @JoinColumn(name = "book_id"))
+    @Setter(AccessLevel.PRIVATE)
     private Set<Book> books = new HashSet<Book>();
 
     public Set<Book> getBooks() {
