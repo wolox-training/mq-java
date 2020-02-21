@@ -118,10 +118,10 @@ public class BookController {
 
     @GetMapping("/isbn/{isbn}")
     @ResponseStatus(HttpStatus.OK)
-    public Book findByIsbn(@PathVariable String isbn){
+    public ResponseEntity findByIsbn(@PathVariable String isbn){
         Optional<Book> book = bookRepository.findByIsbn(isbn);
         if (book.isPresent())
-            return book.get();
+            return new ResponseEntity(book.get(), HttpStatus.OK);
 
         OpenLibraryBookDTO bookDto = openLibrary.tryGetBookByIsbn(isbn);
         if (bookDto == null)
@@ -138,6 +138,6 @@ public class BookController {
             isbn
         );
 
-        return bookRepository.save(newBook);
+        return new ResponseEntity(bookRepository.save(newBook), HttpStatus.CREATED);
     }
 }
