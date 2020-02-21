@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 import static wolox.training.factories.UserFactory.getUserKaren;
 import static wolox.training.factories.UserFactory.getUserTroy;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -13,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
 
@@ -74,7 +74,7 @@ public class UserRepositoryIntegrationTest {
 
     @Test
     public void whenDeleteUserById_thenDoesNotReturnUser() {
-        User troy = new User("Troy", "WonderfulTroy", LocalDate.now());
+        User troy = getUserTroy();
 
         entityManager.persist(troy);
         entityManager.flush();

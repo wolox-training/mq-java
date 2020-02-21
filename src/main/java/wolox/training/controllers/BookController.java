@@ -102,7 +102,7 @@ public class BookController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateBook(@RequestBody Book book, @PathVariable Long id) {
         if (book.getId() != id) {
-            throw new IdMismatchException("book");
+            throw new IdMismatchException(Book.class);
         }
         Optional<Book> dbBook = bookRepository.findById(id);
         if (!dbBook.isPresent())

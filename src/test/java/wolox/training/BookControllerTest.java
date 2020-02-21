@@ -16,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -23,6 +24,7 @@ import wolox.training.controllers.BookController;
 import wolox.training.factories.BookFactory;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
+import wolox.training.repositories.UserRepository;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = BookController.class)
@@ -33,8 +35,12 @@ public class BookControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
+    private UserRepository userRepository;
+
+    @MockBean
     private BookRepository mockBookRepository;
 
+    @WithMockUser()
     @Test
     public void whenPostingABook_thenReturnsTheBook() throws Exception {
         Book bookToCreate = BookFactory.getDefaultBook("some little nice book");
@@ -50,6 +56,7 @@ public class BookControllerTest {
             .andExpect(content().string(asJsonString(bookToCreate)));
     }
 
+    @WithMockUser()
     @Test
     public void whenGettingAllBooks_thenReturnsAllBooks() throws Exception {
         Book book1 = BookFactory.getDefaultBook("book1");
@@ -71,6 +78,7 @@ public class BookControllerTest {
             );
     }
 
+    @WithMockUser()
     @Test
     public void whenRequestingExistingBookById_thenReturnsTheBook() throws Exception {
         Book book = BookFactory.getDefaultBook("some nice book");
@@ -86,6 +94,7 @@ public class BookControllerTest {
             .andExpect(content().string(asJsonString(book)));
     }
 
+    @WithMockUser()
     @Test
     public void whenRequestingBooksWithTitleQueryParam_thenReturnsMatchingBooks() throws Exception {
         Book coolBook = BookFactory.getDefaultBook("someCoolBook");
@@ -93,6 +102,7 @@ public class BookControllerTest {
         Mockito.when(mockBookRepository.findByTitle(coolBook.getTitle())).thenReturn(
             new ArrayList<Book>(Arrays.asList(coolBook))
         );
+
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/books")
             .param("title", coolBook.getTitle())
