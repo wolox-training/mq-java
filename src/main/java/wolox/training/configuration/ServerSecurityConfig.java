@@ -46,4 +46,3 @@ public class ServerSecurityConfig extends WebSecurityConfigurerAdapter {
              .authorizeRequests().anyRequest().authenticated();
     }
 }
-

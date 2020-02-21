@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiResponses;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,8 @@ import wolox.training.exceptions.EntityNotFoundException;
 import wolox.training.exceptions.IdMismatchException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
+import wolox.training.services.OpenLibrary;
+import wolox.training.services.dtos.OpenLibraryBookDTO;
 
 @RestController
 @RequestMapping("/api/books")
@@ -28,6 +31,9 @@ import wolox.training.repositories.BookRepository;
 public class BookController {
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private OpenLibrary openLibrary;
 
     /**
      * Find all books.
@@ -108,5 +114,30 @@ public class BookController {
         if (!dbBook.isPresent())
             throw new EntityNotFoundException(Book.class);
         bookRepository.save(book);
+    }
+
+    @GetMapping("/isbn/{isbn}")
+    @ResponseStatus(HttpStatus.OK)
+    public Book findByIsbn(@PathVariable String isbn){
+        Optional<Book> book = bookRepository.findByIsbn(isbn);
+        if (book.isPresent())
+            return book.get();
+
+        OpenLibraryBookDTO bookDto = openLibrary.tryGetBookByIsbn(isbn);
+        if (bookDto == null)
+            throw new EntityNotFoundException(Book.class);
+
+        Book newBook = new Book(
+            bookDto.getTitle(),
+            String.join(", ", bookDto.getAuthors()),
+            "image",
+            bookDto.getSubtitile(),
+            String.join(", ", bookDto.getPublishers()),
+            bookDto.getPublishedYear(),
+            bookDto.getPages(),
+            isbn
+        );
+
+        return bookRepository.save(newBook);
     }
 }

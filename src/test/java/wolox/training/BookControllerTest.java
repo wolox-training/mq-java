@@ -25,6 +25,7 @@ import wolox.training.factories.BookFactory;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 import wolox.training.repositories.UserRepository;
+import wolox.training.services.OpenLibrary;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = BookController.class)
@@ -39,6 +40,9 @@ public class BookControllerTest {
 
     @MockBean
     private BookRepository mockBookRepository;
+
+    @MockBean
+    private OpenLibrary openLibrary;
 
     @WithMockUser()
     @Test
