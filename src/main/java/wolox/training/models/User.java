@@ -34,16 +34,30 @@ import wolox.training.utils.LocalDateSerializer;
 public class User {
     private User(){}
 
-    public User(String name, String username, LocalDate birthDate){
+    public User(String name, String username, LocalDate birthDate, String encodedPassword) {
         setUsername(username);
         setName(name);
         setBirthDate(birthDate);
+        setPassword(encodedPassword);
     }
 
     @Id
     @Setter(AccessLevel.PRIVATE)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+
+    @Column(nullable = false)
+    private String password;
+
+    public void setPassword(String password){
+        this.password = checkString(password, "password");
+    }
+
+    @Column(nullable = false)
+    private String role = "USER";
+    public void setRole(String role){
+        this.role = checkString(role, "role");
+    }
 
     @Column(nullable = false)
     private String username;

@@ -1,5 +1,7 @@
 package wolox.training.controllers;
 
+import static wolox.training.configuration.ServerSecurityConfig.encodePassword;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -37,10 +39,10 @@ public class UserController {
     private BookController bookController;
 
     /**
-     * Find all users.
+     * Find all {@link User}s.
      *
-     * @param username optional query param to find by the user's username
-     * @return the found users
+     * @param username optional query param to find by the {@link User}'s username
+     * @return the found {@link User}s
      */
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String username) {
@@ -50,11 +52,11 @@ public class UserController {
     };
 
     /**
-     * Find one user.
+     * Find one {@link User}.
      *
      * @throws EntityNotFoundException
      * @param id the id
-     * @return the user
+     * @return the {@link User}
      */
     @GetMapping("/{id}")
     public User findOne(@PathVariable Long id) {
@@ -67,20 +69,22 @@ public class UserController {
     /**
      * Create User.
      *
-     * @param user the user to create
-     * @return the user
+     * @param user the {@link User} to create
+     * @return the {@link User}
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@RequestBody User user) {
-        return userRepository.save(user);
+        user.setPassword(encodePassword(user.getPassword()));
+        User dbUser = userRepository.save(user);
+        return dbUser;
     }
 
     /**
-     * Delete an existing user.
+     * Delete an existing {@link User}.
      *
      * @throws EntityNotFoundException
-     * @param id the path variable id of the user to find and delete
+     * @param id the path variable id of the {@link User} to find and delete
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -96,15 +100,15 @@ public class UserController {
      *
      * @throws IdMismatchException if pathVariable id does not match body id.
      * @throws EntityNotFoundException
-     * @param user the request updated user to save
-     * @param id   the path variable for the user id
-     * @return the saved updated user
+     * @param user the request updated {@link User} to save
+     * @param id   the path variable for the {@link User} id
+     * @return the saved updated {@link User}
      */
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateUser(@RequestBody User user, @PathVariable Long id) {
         if (user.getId() != id) {
-            throw new IdMismatchException("user");
+            throw new IdMismatchException(User.class);
         }
         Optional<User> dbUser = userRepository.findById(id);
         if (!dbUser.isPresent())
@@ -116,8 +120,8 @@ public class UserController {
     /**
      * Assign Book to User.
      *
-     * @param userId the user id
-     * @param bookId the book id
+     * @param userId the {@link User} id
+     * @param bookId the {@link Book} id
      * @throws EntityNotFoundException
      * @throws BookAlreadyOwnedException
      * @return the user
@@ -160,6 +164,25 @@ public class UserController {
         Book book = bookController.findOne(bookId);
         user.deassignBook(book);
         userRepository.save(user);
+    }
+
+    /**
+     * Update password of a {@link User}.
+     *
+     * @param id the user's id
+     * @param user the user
+     * @throws EntityNotFoundException
+     * @throws BookNotOwnedException
+     * @return the user
+     */
+    @PutMapping("/{id}/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updatePassword(@PathVariable Long id, @RequestBody User user) {
+        if (user.getId() != id)
+            throw new IdMismatchException(User.class);
+        User dbUser = userRepository.findById(id).orElse(null);
+        dbUser.setPassword(encodePassword(user.getPassword()));
+        userRepository.save(dbUser);
     }
 
 }
