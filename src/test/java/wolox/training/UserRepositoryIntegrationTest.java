@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static wolox.training.factories.UserFactory.getUserKaren;
 import static wolox.training.factories.UserFactory.getUserTroy;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import wolox.training.exceptions.EntityNotFoundException;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
 
@@ -83,5 +85,24 @@ public class UserRepositoryIntegrationTest {
         assertThat(dbTroy.getName()).isEqualTo(troy.getName());
         userRepository.deleteById(troy.getId());
         assertThat(userRepository.findById(dbTroy.getId())).isEqualTo(Optional.empty());
+    }
+
+    @Test
+    public void whenSearchingByBirthDateBetweenAndNameContainingIgnoreCase_thenReturnsUser() {
+        User troy = getUserTroy();
+        troy.setName("qwertyuiop");
+        User karen = getUserKaren();
+
+        entityManager.persist(troy);
+        entityManager.persist(karen);
+        entityManager.flush();
+
+        User dbTroy = userRepository.findByBirthDateBetweenAndNameContainingIgnoreCase(
+            LocalDate.now().minusDays(1),
+            LocalDate.now().plusDays(1),
+            "rtyu"
+        ).stream().findFirst().orElseThrow(() -> new EntityNotFoundException(User.class));
+
+        assertThat(dbTroy.getName()).isEqualTo(troy.getName());
     }
 }

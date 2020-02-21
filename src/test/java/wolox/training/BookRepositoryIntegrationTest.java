@@ -88,4 +88,19 @@ public class BookRepositoryIntegrationTest {
         bookRepository.deleteById(book.getId());
         assertThat(bookRepository.findById(book.getId())).isEqualTo(Optional.empty());
     }
+
+    @Test
+    public void whenSearchingByPublisherGenreAndYear_thenReturnsMatchingBook() {
+        Book book = getDefaultBook("Some Book");
+
+        entityManager.persist(book);
+        entityManager.flush();
+
+        Book dbBook = bookRepository.findByPublisherAndGenreAndYear(
+            book.getPublisher(),
+            book.getGenre(),
+            book.getYear()
+        ).stream().findFirst().get();
+        assertThat(dbBook.getIsbn()).isEqualTo(book.getIsbn());
+    }
 }
