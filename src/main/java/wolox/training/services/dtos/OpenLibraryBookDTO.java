@@ -1,6 +1,5 @@
 package wolox.training.services.dtos;
 
-import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
