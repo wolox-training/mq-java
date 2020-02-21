@@ -33,10 +33,10 @@ public class UserRepositoryIntegrationTest {
         entityManager.persist(troy);
         entityManager.flush();
 
-        List<User> found = userRepository.findByUsername(troy.getUsername());
-        assertThat(found.get(0).getName()).isEqualTo(troy.getName());
-        assertThat(found.get(0).getUsername()).isEqualTo(troy.getUsername());
-        assertThat(found.get(0).getBirthDate()).isEqualTo(troy.getBirthDate());
+        User found = userRepository.findByUsername(troy.getUsername());
+        assertThat(found.getName()).isEqualTo(troy.getName());
+        assertThat(found.getUsername()).isEqualTo(troy.getUsername());
+        assertThat(found.getBirthDate()).isEqualTo(troy.getBirthDate());
     }
 
     @Test
@@ -66,7 +66,7 @@ public class UserRepositoryIntegrationTest {
         entityManager.persist(troy);
         entityManager.flush();
 
-        User dbTroy = userRepository.findByUsername(troy.getUsername()).get(0);
+        User dbTroy = userRepository.findByUsername(troy.getUsername());
         assertThat(dbTroy.getName()).isEqualTo(troy.getName());
         userRepository.delete(troy);
         assertThat(userRepository.findById(dbTroy.getId())).isEqualTo(Optional.empty());
@@ -79,7 +79,7 @@ public class UserRepositoryIntegrationTest {
         entityManager.persist(troy);
         entityManager.flush();
 
-        User dbTroy = userRepository.findByUsername(troy.getUsername()).get(0);
+        User dbTroy = userRepository.findByUsername(troy.getUsername());
         assertThat(dbTroy.getName()).isEqualTo(troy.getName());
         userRepository.deleteById(troy.getId());
         assertThat(userRepository.findById(dbTroy.getId())).isEqualTo(Optional.empty());

@@ -59,7 +59,7 @@ public class User {
         this.role = checkString(role, "role");
     }
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
     public void setUsername(String username){
         this.username = checkString(username, "username");

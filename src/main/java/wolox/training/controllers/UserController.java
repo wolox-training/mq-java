@@ -6,7 +6,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.security.Principal;
+import java.util.Arrays;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.BookAlreadyOwnedException;
@@ -47,7 +51,7 @@ public class UserController {
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String username) {
         if (username != null && !username.isEmpty())
-            return userRepository.findByUsername(username);
+            return Arrays.asList(userRepository.findByUsername(username));
         return userRepository.findAll();
     };
 
@@ -185,4 +189,19 @@ public class UserController {
         userRepository.save(dbUser);
     }
 
+
+    /**
+     * Get's the current logged in {@link User}.
+     *
+     * @return the {@link User}
+     */
+    @GetMapping("/me")
+    @ResponseBody
+    public User getLoggedInUser(HttpServletRequest request) {
+        String username = request.getUserPrincipal().getName();
+        User user = userRepository.findByUsername(username);
+        if (user == null)
+            throw new EntityNotFoundException(User.class);
+        return user;
+    }
 }

@@ -129,9 +129,8 @@ public class UserControllerTest {
     public void whenRequestingUsersWithUsernameQueryParam_thenReturnsMatchingUsers() throws Exception {
         User troy = UserFactory.getUserTroy();
         User karen = UserFactory.getUserKaren();
-        Mockito.when(mockUserRepository.findByUsername(troy.getUsername())).thenReturn(
-            new ArrayList<User>(Arrays.asList(troy))
-        );
+        Mockito.when(mockUserRepository.findByUsername(troy.getUsername()))
+            .thenReturn(troy);
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/users")
             .param("username", troy.getUsername())

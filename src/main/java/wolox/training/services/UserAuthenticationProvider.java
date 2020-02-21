@@ -27,8 +27,9 @@ public class UserAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) {
         String userName = authentication.getName();
         String password = authentication.getCredentials().toString();
-        User user = userRepository.findByUsername(userName).stream().findFirst()
-            .orElseThrow(() -> new EntityNotFoundException(User.class));
+        User user = userRepository.findByUsername(userName);
+        if (user == null)
+            throw new EntityNotFoundException(User.class);
         if (!isPasswordValid(password, user.getPassword()))
             throw new BadCredentialsException("Invalid password");
         List<GrantedAuthority> grants = new ArrayList<>(
