@@ -38,14 +38,40 @@ public class BookController {
     /**
      * Find all books.
      *
-     * @param title optional query param to find by the book's title
+     * @param title optional query param to find by the ${@link Book}'s title
+     * @param author optional query param to find by the ${@link Book}'s author
+     * @param image optional query param to find by the ${@link Book}'s image
+     * @param subtitle optional query param to find by the ${@link Book}'s subtitle
+     * @param publisher optional query param to find by the ${@link Book}'s publisher
+     * @param year optional query param to find by the ${@link Book}'s year
+     * @param pages optional query param to find by the ${@link Book}'s pages
+     * @param isbn optional query param to find by the ${@link Book}'s isbn
+     * @param genre optional query param to find by the ${@link Book}'s genre
      * @return the found books
      */
     @GetMapping
-    public Iterable findAll(@RequestParam(required = false) String title) {
-        if (title != null && !title.isEmpty())
-            return bookRepository.findByTitle(title);
-        return bookRepository.findAll();
+    public Iterable findAll(
+        @RequestParam(required = false) String title,
+        @RequestParam(required = false) String author,
+        @RequestParam(required = false) String image,
+        @RequestParam(required = false) String subtitle,
+        @RequestParam(required = false) String publisher,
+        @RequestParam(required = false) String year,
+        @RequestParam(required = false) Integer pages,
+        @RequestParam(required = false) String isbn,
+        @RequestParam(required = false) String genre
+        ) {
+        return bookRepository.findAllCustom(
+            title,
+            author,
+            image,
+            subtitle,
+            publisher,
+            year,
+            pages,
+            isbn,
+            genre
+        );
     };
 
     /**

@@ -69,7 +69,8 @@ public class UserControllerTest {
     public void whenGettingAllUsers_thenReturnsAllUsers() throws Exception {
         User troy = UserFactory.getUserTroy();
         User karen = UserFactory.getUserKaren();
-        Mockito.when(mockUserRepository.findAll()).thenReturn(new ArrayList<User>(Arrays.asList(troy, karen)));
+        Mockito.when(mockUserRepository.findAllCustom(null, null, null, null))
+            .thenReturn(new ArrayList<User>(Arrays.asList(troy, karen)));
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/users")
             .contentType(MediaType.APPLICATION_JSON)
@@ -129,11 +130,32 @@ public class UserControllerTest {
     public void whenRequestingUsersWithUsernameQueryParam_thenReturnsMatchingUsers() throws Exception {
         User troy = UserFactory.getUserTroy();
         User karen = UserFactory.getUserKaren();
-        Mockito.when(mockUserRepository.findByUsername(troy.getUsername()))
-            .thenReturn(troy);
+        Mockito.when(mockUserRepository.findAllCustom(null, troy.getUsername(), null, null))
+            .thenReturn(new ArrayList<User>(Arrays.asList(troy)));
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/users")
             .param("username", troy.getUsername())
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath(
+                String.format("$[?(@.username == \'%s\')]", troy.getUsername())).exists()
+            )
+            .andExpect(jsonPath(
+                String.format("$[?(@.username == \'%s\')]", karen.getUsername())).doesNotExist()
+            );
+    }
+
+    @WithMockUser
+    @Test
+    public void whenRequestingAllUsersWithNameQueryParam_thenFiltersByName() throws Exception {
+        User troy = UserFactory.getUserTroy();
+        User karen = UserFactory.getUserKaren();
+        Mockito.when(mockUserRepository.findAllCustom(troy.getName(), null, null, null))
+            .thenReturn(new ArrayList<User>(Arrays.asList(troy)));
+        mockMvc.perform( MockMvcRequestBuilders
+            .get("/api/users")
+            .param("name", troy.getName())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())

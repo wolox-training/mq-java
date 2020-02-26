@@ -65,7 +65,17 @@ public class BookControllerTest {
     public void whenGettingAllBooks_thenReturnsAllBooks() throws Exception {
         Book book1 = BookFactory.getDefaultBook("book1");
         Book book2 = BookFactory.getDefaultBook("book2");
-        Mockito.when(mockBookRepository.findAll()).thenReturn(
+        Mockito.when(mockBookRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        )).thenReturn(
             new ArrayList<Book>(Arrays.asList(book1, book2))
         );
         mockMvc.perform( MockMvcRequestBuilders
@@ -103,7 +113,17 @@ public class BookControllerTest {
     public void whenRequestingBooksWithTitleQueryParam_thenReturnsMatchingBooks() throws Exception {
         Book coolBook = BookFactory.getDefaultBook("someCoolBook");
         Book boringBook = BookFactory.getDefaultBook("someBoringBook");
-        Mockito.when(mockBookRepository.findByTitle(coolBook.getTitle())).thenReturn(
+        Mockito.when(mockBookRepository.findAllCustom(
+            coolBook.getTitle(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        )).thenReturn(
             new ArrayList<Book>(Arrays.asList(coolBook))
         );
 
@@ -118,6 +138,54 @@ public class BookControllerTest {
             )
             .andExpect(jsonPath(
                 String.format("$[?(@.title == \'%s\')]", boringBook.getTitle())).doesNotExist()
+            );
+    }
+
+    @WithMockUser()
+    @Test
+    public void whenRequestingBookWithPagesQueryParam_thenFiltersByPages() throws Exception {
+        Book coolBook = BookFactory.getDefaultBook("someCoolBook");
+        Book boringBook = BookFactory.getDefaultBook("someBoringBook");
+        boringBook.setPages(10000);
+        Mockito.when(mockBookRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            boringBook.getPages(),
+            null,
+            null
+        )).thenReturn(
+            new ArrayList<Book>(Arrays.asList(boringBook))
+        );
+
+        Mockito.when(mockBookRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            coolBook.getPages(),
+            null,
+            null
+        )).thenReturn(
+            new ArrayList<Book>(Arrays.asList(coolBook))
+        );
+
+        mockMvc.perform( MockMvcRequestBuilders
+            .get("/api/books")
+            .param("pages", Integer.toString(boringBook.getPages()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath(
+                String.format("$[?(@.title == \'%s\')]", boringBook.getTitle())).exists()
+            )
+            .andExpect(jsonPath(
+                String.format("$[?(@.title == \'%s\')]", coolBook.getTitle())).doesNotExist()
             );
     }
 }
