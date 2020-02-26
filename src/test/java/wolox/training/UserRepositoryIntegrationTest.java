@@ -1,6 +1,7 @@
 package wolox.training;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 import static wolox.training.factories.UserFactory.getUserKaren;
 import static wolox.training.factories.UserFactory.getUserTroy;
 
@@ -14,6 +15,9 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import wolox.training.exceptions.EntityNotFoundException;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
@@ -184,24 +188,76 @@ public class UserRepositoryIntegrationTest {
         entityManager.persist(troy);
         entityManager.flush();
 
-        List<User> allUsers = new ArrayList<>(userRepository
-            .findAllCustom(null, null, null, null));
+        Page<User> allUsers = userRepository
+            .findAllCustom(null, null, null, null, null);
 
-        List<User> onlyKaren = new ArrayList<>(userRepository
-            .findAllCustom(null, karen.getUsername(), null, null));
+        Page<User> onlyKaren = userRepository
+            .findAllCustom(null, karen.getUsername(), null, null, null);
 
-        List<User> onlyTroy = new ArrayList<>(userRepository
-            .findAllCustom(troy.getName(), null, null, null));
+        Page<User> onlyTroy = userRepository
+            .findAllCustom(troy.getName(), null, null, null, null);
 
-        List<User> allByRole = new ArrayList<>(userRepository
-            .findAllCustom(null, null, troy.getRole(), null));
+        Page<User> allByRole = userRepository
+            .findAllCustom(null, null, troy.getRole(), null, null);
 
-        assertThat(allUsers.size()).isEqualTo(2);
-        assertThat(allByRole.size()).isEqualTo(2);
-        assertThat(onlyKaren.size()).isEqualTo(1);
-        assertThat(onlyTroy.size()).isEqualTo(1);
+        assertThat(allUsers.getContent().size()).isEqualTo(2);
+        assertThat(allByRole.getContent().size()).isEqualTo(2);
+        assertThat(onlyKaren.getContent().size()).isEqualTo(1);
+        assertThat(onlyTroy.getContent().size()).isEqualTo(1);
 
-        assertThat(onlyTroy.get(0).getUsername()).isEqualTo(troy.getUsername());
-        assertThat(onlyKaren.get(0).getUsername()).isEqualTo(karen.getUsername());
+        assertThat(onlyTroy.getContent().get(0).getUsername()).isEqualTo(troy.getUsername());
+        assertThat(onlyKaren.getContent().get(0).getUsername()).isEqualTo(karen.getUsername());
+    }
+
+
+    @Test
+    public void whenPageSearchIsSizeLimited_thenReturnsSizedPages() {
+        User troy = getUserTroy();
+        User karen = getUserKaren();
+        entityManager.persist(karen);
+        entityManager.persist(troy);
+        entityManager.flush();
+
+        Page<User> allUsers = userRepository
+            .findAllCustom(
+                null,
+                null,
+                null,
+                null,
+                PageRequest.of(0, 20)
+            );
+
+        Page<User> limitedUsers = userRepository
+            .findAllCustom(
+                null,
+                null,
+                null,
+                null,
+                PageRequest.of(0, 1)
+            );
+
+        assertThat(allUsers.getContent().size()).isEqualTo(2);
+        assertThat(limitedUsers.getContent().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void whenPageSearchIsSortedByName_thenReturnsNameSortedPages() {
+        User troy = getUserTroy();
+        User karen = getUserKaren();
+        entityManager.persist(karen);
+        entityManager.persist(troy);
+        entityManager.flush();
+
+        Page<User> sortedByNameUsers = userRepository
+            .findAllCustom(
+                null,
+                null,
+                null,
+                null,
+                PageRequest.of(0, 20, Sort.by(ASC, "name"))
+            );
+
+        assertThat(sortedByNameUsers.getContent().get(0).getName()).isEqualTo(karen.getName());
+        assertThat(sortedByNameUsers.getContent().get(1).getName()).isEqualTo(troy.getName());
     }
 }
