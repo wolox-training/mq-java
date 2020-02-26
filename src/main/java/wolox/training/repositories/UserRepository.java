@@ -20,18 +20,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
         + "(cast(:end as date) is NULL OR u.birthDate <= :end)")
     List<User> findByBirthDateBetweenAndNameContainingIgnoreCaseCustom(String username, LocalDate start, LocalDate end);
 
-    @Query(
-        value = "SELECT u FROM User u WHERE "
+    @Query("SELECT u FROM User u WHERE "
             + "(:name IS NULL OR u.name = :name) AND "
             + "(:username IS NULL OR u.username = :username) AND "
             + "(:role IS NULL OR u.role = :role) AND "
-            + "(cast(:birthDate as date) is NULL OR u.birthDate = :birthDate)",
-        countQuery = "SELECT COUNT(*) FROM User u WHERE "
-            + "(:name IS NULL OR u.name = :name) AND "
-            + "(:username IS NULL OR u.username = :username) AND "
-            + "(:role IS NULL OR u.role = :role) AND "
-            + "(cast(:birthDate as date) is NULL OR u.birthDate = :birthDate)"
-    )
+            + "(cast(:birthDate as date) is NULL OR u.birthDate = :birthDate)")
     Page<User> findAllCustom(
         String name,
         String username,
