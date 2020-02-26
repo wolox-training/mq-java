@@ -7,6 +7,7 @@ import static wolox.training.utils.Utils.asJsonString;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -65,6 +69,9 @@ public class BookControllerTest {
     public void whenGettingAllBooks_thenReturnsAllBooks() throws Exception {
         Book book1 = BookFactory.getDefaultBook("book1");
         Book book2 = BookFactory.getDefaultBook("book2");
+
+        List<Book> books = new ArrayList<Book>(Arrays.asList(book1, book2));
+        Page<Book> pagedResponse = new PageImpl(books);
         Mockito.when(mockBookRepository.findAllCustom(
             null,
             null,
@@ -74,21 +81,21 @@ public class BookControllerTest {
             null,
             null,
             null,
-            null
-        )).thenReturn(
-            new ArrayList<Book>(Arrays.asList(book1, book2))
-        );
+            null,
+            PageRequest.of(0, 20)
+        )).thenReturn(pagedResponse);
+
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/books")
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isMap())
             .andExpect(jsonPath(
-                String.format("$[?(@.title == \'%s\')]", book1.getTitle())).exists()
+                String.format("$.content.[?(@.title == \'%s\')]", book1.getTitle())).exists()
             )
             .andExpect(jsonPath(
-                String.format("$[?(@.title == \'%s\')]", book2.getTitle())).exists()
+                String.format("$.content.[?(@.title == \'%s\')]", book2.getTitle())).exists()
             );
     }
 
@@ -122,10 +129,9 @@ public class BookControllerTest {
             null,
             null,
             null,
-            null
-        )).thenReturn(
-            new ArrayList<Book>(Arrays.asList(coolBook))
-        );
+            null,
+            PageRequest.of(0, 20)
+        )).thenReturn(new PageImpl(new ArrayList<Book>(Arrays.asList(coolBook))));
 
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/books")
@@ -134,10 +140,10 @@ public class BookControllerTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath(
-                String.format("$[?(@.title == \'%s\')]", coolBook.getTitle())).exists()
+                String.format("$.content.[?(@.title == \'%s\')]", coolBook.getTitle())).exists()
             )
             .andExpect(jsonPath(
-                String.format("$[?(@.title == \'%s\')]", boringBook.getTitle())).doesNotExist()
+                String.format("$.content.[?(@.title == \'%s\')]", boringBook.getTitle())).doesNotExist()
             );
     }
 
@@ -156,10 +162,9 @@ public class BookControllerTest {
             null,
             boringBook.getPages(),
             null,
-            null
-        )).thenReturn(
-            new ArrayList<Book>(Arrays.asList(boringBook))
-        );
+            null,
+            PageRequest.of(0, 20)
+        )).thenReturn(new PageImpl(new ArrayList<Book>(Arrays.asList(boringBook))));
 
         Mockito.when(mockBookRepository.findAllCustom(
             null,
@@ -170,10 +175,9 @@ public class BookControllerTest {
             null,
             coolBook.getPages(),
             null,
-            null
-        )).thenReturn(
-            new ArrayList<Book>(Arrays.asList(coolBook))
-        );
+            null,
+            PageRequest.of(0, 20)
+        )).thenReturn(new PageImpl(new ArrayList<Book>(Arrays.asList(coolBook))));
 
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/books")
@@ -182,7 +186,7 @@ public class BookControllerTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath(
-                String.format("$[?(@.title == \'%s\')]", boringBook.getTitle())).exists()
+                String.format("$.content.[?(@.title == \'%s\')]", boringBook.getTitle())).exists()
             )
             .andExpect(jsonPath(
                 String.format("$[?(@.title == \'%s\')]", coolBook.getTitle())).doesNotExist()

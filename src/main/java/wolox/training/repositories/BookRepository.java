@@ -3,6 +3,8 @@ package wolox.training.repositories;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import wolox.training.models.Book;
@@ -30,7 +32,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         + "(:pages IS NULL OR b.pages = :pages) AND "
         + "(:isbn IS NULL OR b.isbn = :isbn) AND "
         + "(:genre IS NULL OR b.genre = :genre)")
-    List<Book> findAllCustom(
+    Page<Book> findAllCustom(
         String title,
         String author,
         String image,
@@ -39,6 +41,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         String year,
         Integer pages,
         String isbn,
-        String genre
+        String genre,
+        Pageable pageable
     );
 }

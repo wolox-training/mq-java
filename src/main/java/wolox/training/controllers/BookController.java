@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,6 +52,7 @@ public class BookController {
      */
     @GetMapping
     public Iterable findAll(
+        Pageable pageable,
         @RequestParam(required = false) String title,
         @RequestParam(required = false) String author,
         @RequestParam(required = false) String image,
@@ -70,7 +72,8 @@ public class BookController {
             year,
             pages,
             isbn,
-            genre
+            genre,
+            pageable
         );
     };
 

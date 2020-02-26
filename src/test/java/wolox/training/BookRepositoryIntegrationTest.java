@@ -1,6 +1,7 @@
 package wolox.training;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 import static wolox.training.factories.BookFactory.getDefaultBook;
 
 import java.util.ArrayList;
@@ -12,6 +13,9 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 
@@ -169,64 +173,132 @@ public class BookRepositoryIntegrationTest {
         entityManager.persist(boringBook);
         entityManager.flush();
 
-        List<Book> allBooks = new ArrayList<>(
-            bookRepository.findAllCustom(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-            ));
+        Page<Book> allBooks = bookRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            PageRequest.of(0, 20)
+        );
 
-        List<Book> bothBooksByPublisher = new ArrayList<>(
-            bookRepository.findAllCustom(
-                null,
-                null,
-                null,
-                null,
-                greatestPublisher,
-                null,
-                null,
-                null,
-                null
-            ));
+        Page<Book> bothBooksByPublisher = bookRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            greatestPublisher,
+            null,
+            null,
+            null,
+            null,
+            PageRequest.of(0, 20)
+        );
 
-        List<Book> onlyTheBoringBookByPages = new ArrayList<>(
-            bookRepository.findAllCustom(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                boringBook.getPages(),
-                null,
-                null
-            ));
+        Page<Book> onlyTheBoringBookByPages = bookRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            boringBook.getPages(),
+            null,
+            null,
+            PageRequest.of(0, 20)
+        );
 
-        List<Book> onlyTheCoolByTitle = new ArrayList<>(
-            bookRepository.findAllCustom(
-                coolBook.getTitle(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-            ));
+        Page<Book> onlyTheCoolByTitle = bookRepository.findAllCustom(
+            coolBook.getTitle(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            PageRequest.of(0, 20)
+        );
 
-        assertThat(allBooks.size()).isEqualTo(2);
-        assertThat(bothBooksByPublisher.size()).isEqualTo(2);
-        assertThat(onlyTheBoringBookByPages.size()).isEqualTo(1);
-        assertThat(onlyTheCoolByTitle.size()).isEqualTo(1);
+        assertThat(allBooks.getContent().size()).isEqualTo(2);
+        assertThat(bothBooksByPublisher.getContent().size()).isEqualTo(2);
+        assertThat(onlyTheBoringBookByPages.getContent().size()).isEqualTo(1);
+        assertThat(onlyTheCoolByTitle.getContent().size()).isEqualTo(1);
 
-        assertThat(onlyTheBoringBookByPages.get(0).getTitle()).isEqualTo(boringBook.getTitle());
-        assertThat(onlyTheCoolByTitle.get(0).getTitle()).isEqualTo(coolBook.getTitle());
+        assertThat(onlyTheBoringBookByPages.getContent().get(0).getTitle())
+            .isEqualTo(boringBook.getTitle());
+        assertThat(onlyTheCoolByTitle.getContent().get(0).getTitle())
+            .isEqualTo(coolBook.getTitle());
+    }
+
+    @Test
+    public void whenPageSearchIsSizeLimited_thenReturnsSizedPages() {
+        Book coolBook = getDefaultBook("Cool book");
+        Book boringBook = getDefaultBook("Boring book");
+        entityManager.persist(coolBook);
+        entityManager.persist(boringBook);
+        entityManager.flush();
+
+        Page<Book> allBooks = bookRepository
+            .findAllCustom(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                PageRequest.of(0, 20)
+            );
+
+        Page<Book> limitedBooks = bookRepository
+            .findAllCustom(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                PageRequest.of(0, 1)
+            );
+
+        assertThat(allBooks.getContent().size()).isEqualTo(2);
+        assertThat(limitedBooks.getContent().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void whenPageSearchIsSortedByTitle_thenReturnsTitleSortedPages() {
+        Book coolBook = getDefaultBook("Cool book");
+        Book boringBook = getDefaultBook("Boring book");
+        entityManager.persist(coolBook);
+        entityManager.persist(boringBook);
+        entityManager.flush();
+
+        Page<Book> sortedByTitleBooks = bookRepository
+            .findAllCustom(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                PageRequest.of(0, 20, Sort.by(ASC, "title"))
+            );
+
+        assertThat(sortedByTitleBooks.getContent().get(0).getTitle()).isEqualTo(boringBook.getTitle());
+        assertThat(sortedByTitleBooks.getContent().get(1).getTitle()).isEqualTo(coolBook.getTitle());
     }
 }
