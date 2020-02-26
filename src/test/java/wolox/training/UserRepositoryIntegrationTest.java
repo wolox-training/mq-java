@@ -175,4 +175,33 @@ public class UserRepositoryIntegrationTest {
         assertThat(onlyKarenIgnoringCase.get(0).getUsername()).isEqualTo(karen.getUsername());
         assertThat(onlyKarenIgnoringCase.get(0).getUsername()).isNotEqualTo(karen.getUsername().toUpperCase());
     }
+
+    @Test
+    public void whenSearchByGetAllCustom_thenReturnsUsers() {
+        User troy = getUserTroy();
+        User karen = getUserKaren();
+        entityManager.persist(karen);
+        entityManager.persist(troy);
+        entityManager.flush();
+
+        List<User> allUsers = new ArrayList<>(userRepository
+            .findAllCustom(null, null, null, null));
+
+        List<User> onlyKaren = new ArrayList<>(userRepository
+            .findAllCustom(null, karen.getUsername(), null, null));
+
+        List<User> onlyTroy = new ArrayList<>(userRepository
+            .findAllCustom(troy.getName(), null, null, null));
+
+        List<User> allByRole = new ArrayList<>(userRepository
+            .findAllCustom(null, null, troy.getRole(), null));
+
+        assertThat(allUsers.size()).isEqualTo(2);
+        assertThat(allByRole.size()).isEqualTo(2);
+        assertThat(onlyKaren.size()).isEqualTo(1);
+        assertThat(onlyTroy.size()).isEqualTo(1);
+
+        assertThat(onlyTroy.get(0).getUsername()).isEqualTo(troy.getUsername());
+        assertThat(onlyKaren.get(0).getUsername()).isEqualTo(karen.getUsername());
+    }
 }

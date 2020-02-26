@@ -151,4 +151,82 @@ public class BookRepositoryIntegrationTest {
         assertThat(onlyTheCoolBook.get(0).getTitle()).isEqualTo(coolBook.getTitle());
         assertThat(onlyTheBoringBook.get(0).getTitle()).isEqualTo(boringBook.getTitle());
     }
+
+    @Test
+    public void whenSearchAllCustom_thenReturnsBooks() {
+        String greatestPublisher = "TheBestPublisher";
+        Book coolBook = getDefaultBook("Some Cool Book");
+        coolBook.setPublisher(greatestPublisher);
+        coolBook.setYear("2020");
+        coolBook.setPages(20);
+
+        Book boringBook = getDefaultBook("Some Boring Book");
+        boringBook.setGenre("Drama");
+        boringBook.setPages(10);
+        boringBook.setPublisher(greatestPublisher);
+
+        entityManager.persist(coolBook);
+        entityManager.persist(boringBook);
+        entityManager.flush();
+
+        List<Book> allBooks = new ArrayList<>(
+            bookRepository.findAllCustom(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+            ));
+
+        List<Book> bothBooksByPublisher = new ArrayList<>(
+            bookRepository.findAllCustom(
+                null,
+                null,
+                null,
+                null,
+                greatestPublisher,
+                null,
+                null,
+                null,
+                null
+            ));
+
+        List<Book> onlyTheBoringBookByPages = new ArrayList<>(
+            bookRepository.findAllCustom(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                boringBook.getPages(),
+                null,
+                null
+            ));
+
+        List<Book> onlyTheCoolByTitle = new ArrayList<>(
+            bookRepository.findAllCustom(
+                coolBook.getTitle(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+            ));
+
+        assertThat(allBooks.size()).isEqualTo(2);
+        assertThat(bothBooksByPublisher.size()).isEqualTo(2);
+        assertThat(onlyTheBoringBookByPages.size()).isEqualTo(1);
+        assertThat(onlyTheCoolByTitle.size()).isEqualTo(1);
+
+        assertThat(onlyTheBoringBookByPages.get(0).getTitle()).isEqualTo(boringBook.getTitle());
+        assertThat(onlyTheCoolByTitle.get(0).getTitle()).isEqualTo(coolBook.getTitle());
+    }
 }
