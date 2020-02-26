@@ -3,19 +3,20 @@ package wolox.training;
 import static org.assertj.core.api.Assertions.assertThat;
 import static wolox.training.factories.BookFactory.getDefaultBook;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = Replace.NONE)
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 public class BookRepositoryIntegrationTest {
 
     @Autowired
@@ -53,10 +54,10 @@ public class BookRepositoryIntegrationTest {
 
         List<Book> found = bookRepository.findAll();
         Book supposedlyBook1 = found.stream()
-            .filter(u -> u.getTitle() == book1.getTitle())
+            .filter(u -> u.getTitle().equals(book1.getTitle()))
             .findFirst().orElse(null);
         Book supposedlyBook2 = found.stream()
-            .filter(u -> u.getTitle() == book2.getTitle())
+            .filter(u -> u.getTitle().equals(book2.getTitle()))
             .findFirst().orElse(null);
         assertThat(book1).isNotEqualTo(null);
         assertThat(book2).isNotEqualTo(null);
@@ -70,6 +71,7 @@ public class BookRepositoryIntegrationTest {
 
         Book dbBook = bookRepository.findByTitle(book.getTitle())
             .stream().findFirst().orElse(null);
+        assertThat(dbBook).isNotNull();
         assertThat(dbBook.getIsbn()).isEqualTo(book.getIsbn());
         bookRepository.delete(book);
         assertThat(bookRepository.findById(book.getId())).isEqualTo(Optional.empty());
@@ -84,6 +86,7 @@ public class BookRepositoryIntegrationTest {
 
         Book dbBook = bookRepository.findByTitle(book.getTitle())
             .stream().findFirst().orElse(null);
+        assertThat(dbBook).isNotNull();
         assertThat(dbBook.getIsbn()).isEqualTo(book.getIsbn());
         bookRepository.deleteById(book.getId());
         assertThat(bookRepository.findById(book.getId())).isEqualTo(Optional.empty());
@@ -96,11 +99,56 @@ public class BookRepositoryIntegrationTest {
         entityManager.persist(book);
         entityManager.flush();
 
-        Book dbBook = bookRepository.findByPublisherAndGenreAndYear(
+        Optional<Book> dbBook = bookRepository.findByPublisherAndGenreAndYear(
             book.getPublisher(),
             book.getGenre(),
             book.getYear()
-        ).stream().findFirst().get();
-        assertThat(dbBook.getIsbn()).isEqualTo(book.getIsbn());
+        ).stream().findFirst();
+        assertThat(dbBook.isPresent()).isTrue();
+        assertThat(dbBook.get().getIsbn()).isEqualTo(book.getIsbn());
+    }
+
+    @Test
+    public void whenSearchingByPublisherGenreAndYearCustom_thenReturnsMatchingBook() {
+        String greatestPublisher = "TheBestPublisher";
+        Book coolBook = getDefaultBook("Some Cool Book");
+        coolBook.setPublisher(greatestPublisher);
+        coolBook.setYear("2020");
+
+        Book boringBook = getDefaultBook("Some Boring Book");
+        boringBook.setGenre("Drama");
+        boringBook.setPublisher(greatestPublisher);
+
+        entityManager.persist(coolBook);
+        entityManager.persist(boringBook);
+        entityManager.flush();
+
+        List<Book> bothBooksByPublisher = new ArrayList<>(
+            bookRepository.findByPublisherAndGenreAndYearCustom(
+                greatestPublisher,
+                null,
+                null
+            ));
+
+        List<Book> onlyTheBoringBook = new ArrayList<>(
+            bookRepository.findByPublisherAndGenreAndYearCustom(
+                null,
+                boringBook.getGenre(),
+                null
+            ));
+
+        List<Book> onlyTheCoolBook = new ArrayList<>(
+            bookRepository.findByPublisherAndGenreAndYearCustom(
+                null,
+                null,
+                coolBook.getYear()
+            ));
+
+        assertThat(bothBooksByPublisher.size()).isEqualTo(2);
+        assertThat(onlyTheBoringBook.size()).isEqualTo(1);
+        assertThat(onlyTheCoolBook.size()).isEqualTo(1);
+
+        assertThat(onlyTheCoolBook.get(0).getTitle()).isEqualTo(coolBook.getTitle());
+        assertThat(onlyTheBoringBook.get(0).getTitle()).isEqualTo(boringBook.getTitle());
     }
 }
