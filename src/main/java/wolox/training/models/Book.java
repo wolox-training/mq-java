@@ -78,38 +78,38 @@ public class Book {
         setIsbn(isbn);
     }
 
-    public void setAuthor(String author){
+    private void setAuthor(String author){
         this.author = checkString(author, "author");
     }
 
-    public void setImage(String image){
+    private void setImage(String image){
         this.image = checkString(image, "image");
     }
 
-    public void setTitle(String title){
+    private void setTitle(String title){
         this.title = checkString(title, "title");
     }
 
-    public void setSubtitle(String subtitle){
+    private void setSubtitle(String subtitle){
         this.subtitle = checkString(subtitle, "subtitle");
     }
 
-    public void setPublisher(String publisher){
+    private void setPublisher(String publisher){
         this.publisher = checkString(publisher, "publisher");
     }
 
-    public void setYear(String year){
+    private void setYear(String year){
         this.year = checkString(year, "year");
     }
 
-    public void setPages(int pages){
+    private void setPages(int pages){
         checkArgument(
             pages >= 0,
             "Pages must be greater or equal than zero" );
         this.pages = pages;
     }
 
-    public void setIsbn(String isbn){
+    private void setIsbn(String isbn){
         this.isbn = checkString(isbn, "isbn");
     }
 }
