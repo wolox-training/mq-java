@@ -1,7 +1,7 @@
 package wolox.training.models;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static wolox.training.utils.Utils.checkString;
+import static wolox.training.utils.PropertyValidationUtils.checkString;
 
 import io.swagger.annotations.ApiModel;
 import javax.persistence.Column;

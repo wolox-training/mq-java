@@ -1,6 +1,6 @@
 package wolox.training.models;
 
-import static wolox.training.utils.Utils.*;
+import static wolox.training.utils.PropertyValidationUtils.*;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.annotations.ApiModel;

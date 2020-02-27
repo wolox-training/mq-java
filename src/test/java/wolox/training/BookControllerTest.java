@@ -3,7 +3,7 @@ package wolox.training;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static wolox.training.utils.Utils.asJsonString;
+import static wolox.training.utils.PropertyValidationUtils.asJsonString;
 
 import java.util.ArrayList;
 import java.util.Arrays;
