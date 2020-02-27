@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -23,8 +24,39 @@ import lombok.Setter;
 @Data
 @ApiModel(description = "Model of a book that may be assigned to users")
 @EqualsAndHashCode
+@NoArgsConstructor
 public class Book {
-    private Book(){}
+    @Id
+    @Setter(AccessLevel.PRIVATE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+
+    @Column
+    private String genre;
+
+    @Column(nullable = false)
+    private String author;
+
+    @Column(nullable = false)
+    private String image;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private String subtitle;
+
+    @Column(nullable = false)
+    private String publisher;
+
+    @Column(nullable = false)
+    private String year;
+
+    @Column(nullable = false)
+    private int pages;
+
+    @Column(nullable = false)
+    private String isbn;
 
     public Book(
         String title,
@@ -46,52 +78,30 @@ public class Book {
         setIsbn(isbn);
     }
 
-    @Id
-    @Setter(AccessLevel.PRIVATE)
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
-
-    @Column
-    private String genre;
-
-    @Column(nullable = false)
-    private String author;
     public void setAuthor(String author){
         this.author = checkString(author, "author");
     }
 
-    @Column(nullable = false)
-    private String image;
     public void setImage(String image){
         this.image = checkString(image, "image");
     }
 
-    @Column(nullable = false)
-    private String title;
     public void setTitle(String title){
         this.title = checkString(title, "title");
     }
 
-    @Column(nullable = false)
-    private String subtitle;
     public void setSubtitle(String subtitle){
         this.subtitle = checkString(subtitle, "subtitle");
     }
 
-    @Column(nullable = false)
-    private String publisher;
     public void setPublisher(String publisher){
         this.publisher = checkString(publisher, "publisher");
     }
 
-    @Column(nullable = false)
-    private String year;
     public void setYear(String year){
         this.year = checkString(year, "year");
     }
 
-    @Column(nullable = false)
-    private int pages;
     public void setPages(int pages){
         checkArgument(
             pages >= 0,
@@ -99,8 +109,6 @@ public class Book {
         this.pages = pages;
     }
 
-    @Column(nullable = false)
-    private String isbn;
     public void setIsbn(String isbn){
         this.isbn = checkString(isbn, "isbn");
     }
