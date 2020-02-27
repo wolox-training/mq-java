@@ -73,10 +73,10 @@ public class BookRepositoryIntegrationTest {
         entityManager.persist(book);
         entityManager.flush();
 
-        Book dbBook = bookRepository.findByTitle(book.getTitle())
+        Book foundBook = bookRepository.findByTitle(book.getTitle())
             .stream().findFirst().orElse(null);
-        assertThat(dbBook).isNotNull();
-        assertThat(dbBook.getIsbn()).isEqualTo(book.getIsbn());
+        assertThat(foundBook).isNotNull();
+        assertThat(foundBook.getIsbn()).isEqualTo(book.getIsbn());
         bookRepository.delete(book);
         assertThat(bookRepository.findById(book.getId())).isEqualTo(Optional.empty());
     }
@@ -88,10 +88,10 @@ public class BookRepositoryIntegrationTest {
         entityManager.persist(book);
         entityManager.flush();
 
-        Book dbBook = bookRepository.findByTitle(book.getTitle())
+        Book foundBook = bookRepository.findByTitle(book.getTitle())
             .stream().findFirst().orElse(null);
-        assertThat(dbBook).isNotNull();
-        assertThat(dbBook.getIsbn()).isEqualTo(book.getIsbn());
+        assertThat(foundBook).isNotNull();
+        assertThat(foundBook.getIsbn()).isEqualTo(book.getIsbn());
         bookRepository.deleteById(book.getId());
         assertThat(bookRepository.findById(book.getId())).isEqualTo(Optional.empty());
     }
@@ -115,13 +115,28 @@ public class BookRepositoryIntegrationTest {
     @Test
     public void whenSearchingByPublisherGenreAndYearCustom_thenReturnsMatchingBook() {
         String greatestPublisher = "TheBestPublisher";
-        Book coolBook = getDefaultBook("Some Cool Book");
-        coolBook.setPublisher(greatestPublisher);
-        coolBook.setYear("2020");
+        Book coolBook = new Book(
+            "Some cool Book",
+            "DefaultAuthor",
+            "DefaultImage",
+            "DefaultSubtitle",
+            greatestPublisher,
+            "2020",
+            1,
+            "Default isbn"
+        );
 
-        Book boringBook = getDefaultBook("Some Boring Book");
+        Book boringBook = new Book(
+            "Some boring Book",
+            "DefaultAuthor",
+            "DefaultImage",
+            "DefaultSubtitle",
+            greatestPublisher,
+            "1994",
+            1,
+            "Default isbn"
+        );
         boringBook.setGenre("Drama");
-        boringBook.setPublisher(greatestPublisher);
 
         entityManager.persist(coolBook);
         entityManager.persist(boringBook);
@@ -159,15 +174,28 @@ public class BookRepositoryIntegrationTest {
     @Test
     public void whenSearchAllCustom_thenReturnsBooks() {
         String greatestPublisher = "TheBestPublisher";
-        Book coolBook = getDefaultBook("Some Cool Book");
-        coolBook.setPublisher(greatestPublisher);
-        coolBook.setYear("2020");
-        coolBook.setPages(20);
+        Book coolBook = new Book(
+            "Some cool Book",
+            "DefaultAuthor",
+            "DefaultImage",
+            "DefaultSubtitle",
+            greatestPublisher,
+            "2020",
+            20,
+            "Default isbn"
+        );
 
-        Book boringBook = getDefaultBook("Some Boring Book");
+        Book boringBook = new Book(
+            "Some boring Book",
+            "DefaultAuthor",
+            "DefaultImage",
+            "DefaultSubtitle",
+            greatestPublisher,
+            "1994",
+            10,
+            "Default isbn"
+        );
         boringBook.setGenre("Drama");
-        boringBook.setPages(10);
-        boringBook.setPublisher(greatestPublisher);
 
         entityManager.persist(coolBook);
         entityManager.persist(boringBook);

@@ -86,10 +86,8 @@ public class BookController {
      */
     @GetMapping("/{id}")
     public Book findOne(@PathVariable Long id) {
-        Optional<Book> book = bookRepository.findById(id);
-        if (!book.isPresent())
-            throw new EntityNotFoundException(Book.class);
-        return book.get();
+        return bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Book.class));
     }
 
     /**
@@ -113,9 +111,8 @@ public class BookController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        Optional<Book> book = bookRepository.findById(id);
-        if (!book.isPresent())
-            throw new EntityNotFoundException(Book.class);
+        bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Book.class));
         bookRepository.deleteById(id);
     }
 
@@ -136,12 +133,10 @@ public class BookController {
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateBook(@RequestBody Book book, @PathVariable Long id) {
-        if (book.getId() != id) {
+        if (book.getId() != id)
             throw new IdMismatchException(Book.class);
-        }
-        Optional<Book> dbBook = bookRepository.findById(id);
-        if (!dbBook.isPresent())
-            throw new EntityNotFoundException(Book.class);
+        bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Book.class));
         bookRepository.save(book);
     }
 

@@ -3,7 +3,7 @@ package wolox.training;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static wolox.training.utils.Utils.asJsonString;
+import static wolox.training.utils.PropertyValidationUtils.asJsonString;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -157,8 +157,16 @@ public class BookControllerTest {
     @Test
     public void whenRequestingBookWithPagesQueryParam_thenFiltersByPages() throws Exception {
         Book coolBook = BookFactory.getDefaultBook("someCoolBook");
-        Book boringBook = BookFactory.getDefaultBook("someBoringBook");
-        boringBook.setPages(10000);
+        Book boringBook = new Book(
+            "Some boring book",
+            "DefaultAuthor",
+            "DefaultImage",
+            "DefaultSubtitle",
+            "DefaultPublisher",
+            "1994",
+            20000,
+            "Default isbn"
+        );
         Mockito.when(mockBookRepository.findAllCustom(
             null,
             null,
