@@ -1,5 +1,9 @@
 package wolox.training.models;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static wolox.training.utils.PropertyValidationUtils.checkString;
+
+import io.swagger.annotations.ApiModel;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -7,6 +11,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -14,7 +20,11 @@ import lombok.Setter;
  *
  * @author tinoq-woloxer
  */
-@Entity @Data
+@Entity
+@Data
+@ApiModel(description = "Model of a book that may be assigned to users")
+@EqualsAndHashCode
+@NoArgsConstructor
 public class Book {
     @Id
     @Setter(AccessLevel.PRIVATE)
@@ -47,4 +57,59 @@ public class Book {
 
     @Column(nullable = false)
     private String isbn;
+
+    public Book(
+        String title,
+        String author,
+        String image,
+        String subtitle,
+        String publisher,
+        String year,
+        int pages,
+        String isbn
+    ){
+        setTitle(title);
+        setAuthor(author);
+        setImage(image);
+        setSubtitle(subtitle);
+        setPublisher(publisher);
+        setYear(year);
+        setPages(pages);
+        setIsbn(isbn);
+    }
+
+    private void setAuthor(String author){
+        this.author = checkString(author, "author");
+    }
+
+    private void setImage(String image){
+        this.image = checkString(image, "image");
+    }
+
+    private void setTitle(String title){
+        this.title = checkString(title, "title");
+    }
+
+    private void setSubtitle(String subtitle){
+        this.subtitle = checkString(subtitle, "subtitle");
+    }
+
+    private void setPublisher(String publisher){
+        this.publisher = checkString(publisher, "publisher");
+    }
+
+    private void setYear(String year){
+        this.year = checkString(year, "year");
+    }
+
+    private void setPages(int pages){
+        checkArgument(
+            pages >= 0,
+            "Pages must be greater or equal than zero" );
+        this.pages = pages;
+    }
+
+    private void setIsbn(String isbn){
+        this.isbn = checkString(isbn, "isbn");
+    }
 }

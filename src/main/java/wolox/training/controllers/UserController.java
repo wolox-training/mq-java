@@ -1,5 +1,11 @@
 package wolox.training.controllers;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,14 +18,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import wolox.training.exceptions.*;
+import wolox.training.exceptions.BookAlreadyOwnedException;
+import wolox.training.exceptions.BookNotOwnedException;
+import wolox.training.exceptions.IdMismatchException;
+import wolox.training.exceptions.EntityNotFoundException;
 import wolox.training.models.Book;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
 
-
 @RestController
 @RequestMapping("/api/users")
+@Api
 public class UserController {
     @Autowired
     private UserRepository userRepository;
@@ -34,8 +43,8 @@ public class UserController {
      * @return the found users
      */
     @GetMapping
-    public Iterable findAll(@RequestParam String username) {
-        if (username != null && !username.isEmpty())
+    public Iterable findAll(@RequestParam(required = false) String username) {
+        if (!isNullOrEmpty(username))
             return userRepository.findByUsername(username);
         return userRepository.findAll();
     };
@@ -43,14 +52,14 @@ public class UserController {
     /**
      * Find one user.
      *
-     * @throws UserNotFoundException
+     * @throws EntityNotFoundException
      * @param id the id
      * @return the user
      */
     @GetMapping("/{id}")
     public User findOne(@PathVariable Long id) {
         return userRepository.findById(id)
-            .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
     }
 
     /**
@@ -68,14 +77,14 @@ public class UserController {
     /**
      * Delete an existing user.
      *
-     * @throws UserNotFoundException
+     * @throws EntityNotFoundException
      * @param id the path variable id of the user to find and delete
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         userRepository.findById(id)
-            .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
         userRepository.deleteById(id);
     }
 
@@ -83,7 +92,7 @@ public class UserController {
      * Updates an existing user.
      *
      * @throws IdMismatchException if pathVariable id does not match body id.
-     * @throws UserNotFoundException
+     * @throws EntityNotFoundException
      * @param user the request updated user to save
      * @param id   the path variable for the user id
      * @return the saved updated user
@@ -91,11 +100,10 @@ public class UserController {
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateUser(@RequestBody User user, @PathVariable Long id) {
-        if (user.getId() != id) {
+        if (user.getId() != id)
             throw new IdMismatchException("user");
-        }
         userRepository.findById(id)
-            .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
         userRepository.save(user);
     }
 
@@ -105,11 +113,17 @@ public class UserController {
      *
      * @param userId the user id
      * @param bookId the book id
-     * @throws UserNotFoundException
-     * @throws BookNotFoundException
+     * @throws EntityNotFoundException
      * @throws BookAlreadyOwnedException
      * @return the user
      */
+    @ApiOperation(value = "Asigns a book to a user", response = User.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Book successfully assigned to user"),
+        @ApiResponse(code = 404, message = "User not found"),
+        @ApiResponse(code = 404, message = "Book not found"),
+        @ApiResponse(code = 400, message = "Book already owned exception")
+    })
     @PostMapping("/{userId}/assignBook/{bookId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void assignBook(@PathVariable Long userId, @PathVariable Long bookId) {
@@ -124,12 +138,17 @@ public class UserController {
      *
      * @param userId the user's id
      * @param bookId the user's id
-     * @throws UserNotFoundException
-     * @throws BookNotFoundException
+     * @throws EntityNotFoundException
      * @throws BookNotOwnedException
      * @return the user
      */
     @PostMapping("/{userId}/deassignBook/{bookId}")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Book successfully assigned to user"),
+        @ApiResponse(code = 404, message = "User not found"),
+        @ApiResponse(code = 404, message = "Book not found"),
+        @ApiResponse(code = 400, message = "Book not owned exception")
+    })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deassignBook(@PathVariable Long userId, @PathVariable Long bookId) {
         User user = findOne(userId);
