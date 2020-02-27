@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.EntityNotFoundException;
 import wolox.training.exceptions.IdMismatchException;
 import wolox.training.models.Book;
+import wolox.training.models.User;
 import wolox.training.repositories.BookRepository;
 
 @RestController
@@ -51,10 +52,8 @@ public class BookController {
      */
     @GetMapping("/{id}")
     public Book findOne(@PathVariable Long id) {
-        Optional<Book> book = bookRepository.findById(id);
-        if (!book.isPresent())
-            throw new EntityNotFoundException(Book.class);
-        return book.get();
+        return bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Book.class));
     }
 
     /**
@@ -78,9 +77,8 @@ public class BookController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        Optional<Book> book = bookRepository.findById(id);
-        if (!book.isPresent())
-            throw new EntityNotFoundException(Book.class);
+        bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Book.class));
         bookRepository.deleteById(id);
     }
 
@@ -101,12 +99,10 @@ public class BookController {
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateBook(@RequestBody Book book, @PathVariable Long id) {
-        if (book.getId() != id) {
+        if (book.getId() != id)
             throw new IdMismatchException("book");
-        }
-        Optional<Book> dbBook = bookRepository.findById(id);
-        if (!dbBook.isPresent())
-            throw new EntityNotFoundException(Book.class);
+        bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Book.class));
         bookRepository.save(book);
     }
 }

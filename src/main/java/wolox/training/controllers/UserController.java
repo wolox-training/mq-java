@@ -1,10 +1,11 @@
 package wolox.training.controllers;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,7 +26,6 @@ import wolox.training.models.Book;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
 
-
 @RestController
 @RequestMapping("/api/users")
 @Api
@@ -44,7 +44,7 @@ public class UserController {
      */
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String username) {
-        if (username != null && !username.isEmpty())
+        if (!isNullOrEmpty(username))
             return userRepository.findByUsername(username);
         return userRepository.findAll();
     };
@@ -58,10 +58,8 @@ public class UserController {
      */
     @GetMapping("/{id}")
     public User findOne(@PathVariable Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (!user.isPresent())
-            throw new EntityNotFoundException(User.class);
-        return user.get();
+        return userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
     }
 
     /**
@@ -85,9 +83,8 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (!user.isPresent())
-            throw new EntityNotFoundException(User.class);
+        userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
         userRepository.deleteById(id);
     }
 
@@ -103,12 +100,10 @@ public class UserController {
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateUser(@RequestBody User user, @PathVariable Long id) {
-        if (user.getId() != id) {
+        if (user.getId() != id)
             throw new IdMismatchException("user");
-        }
-        Optional<User> dbUser = userRepository.findById(id);
-        if (!dbUser.isPresent())
-            throw new EntityNotFoundException(User.class);
+        userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
         userRepository.save(user);
     }
 

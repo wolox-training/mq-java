@@ -17,8 +17,7 @@ public class UserModelUnitTest {
     @Test
     public void whenTryingToSetEmptyName_thenItFails() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            User troy = getUserTroy();
-            troy.setName(null);
+            new User(null, "someUsername", LocalDate.now());
         });
         assertThat(exception.getMessage()).isEqualTo("name cannot be null!");
     }
