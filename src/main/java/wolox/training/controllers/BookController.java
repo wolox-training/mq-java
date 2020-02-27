@@ -1,10 +1,11 @@
 package wolox.training.controllers;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.EntityNotFoundException;
 import wolox.training.exceptions.IdMismatchException;
 import wolox.training.models.Book;
-import wolox.training.models.User;
 import wolox.training.repositories.BookRepository;
 
 @RestController
@@ -38,7 +38,7 @@ public class BookController {
      */
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String title) {
-        if (title != null && !title.isEmpty())
+        if (!isNullOrEmpty(title))
             return bookRepository.findByTitle(title);
         return bookRepository.findAll();
     };
