@@ -63,15 +63,15 @@ public class User {
         setBirthDate(birthDate);
     }
 
-    public void setUsername(String username){
+    private void setUsername(String username){
         this.username = checkString(username, "username");
     }
 
-    public void setName(String name){
+    private void setName(String name){
         this.name = checkString(name, "name");
     }
 
-    public void setBirthDate(LocalDate birthDate){
+    private void setBirthDate(LocalDate birthDate){
         this.birthDate = checkLocalDate(birthDate, "birthDate");
     }
 
