@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static wolox.training.utils.Utils.asJsonString;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -46,6 +49,9 @@ public class BookControllerTest {
     private BookRepository mockBookRepository;
 
     @MockBean
+    private RestTemplateBuilder testRestTemplate;
+
+    @Autowired
     private OpenLibrary openLibrary;
 
     @WithMockUser()
@@ -191,5 +197,23 @@ public class BookControllerTest {
             .andExpect(jsonPath(
                 String.format("$[?(@.title == \'%s\')]", coolBook.getTitle())).doesNotExist()
             );
+    }
+
+    @WithMockUser()
+    @Test
+    public void whenSearchingBookByIsbnFallsBackToOpenLibrary_thenReturnsNewSavedBook() throws Exception {
+        String theIsbn = "9780812984965";
+        Mockito.when(mockBookRepository.findByIsbn(theIsbn)).thenReturn(Optional.empty());
+        Book book = OpenLibrary.buildDTOFromJsonString(
+            theIsbn,
+            String.join("", Files.readAllLines(Paths.get("__files/ISBN_9780812984965.json")))
+        ).getAsBook();
+        Mockito.when(mockBookRepository.save(book)).thenReturn(book);
+        mockMvc.perform( MockMvcRequestBuilders
+            .get(String.format("/api/books/isbn/%s", theIsbn))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.title").value(book.getTitle()))
+            .andExpect(jsonPath("$.isbn").value(book.getIsbn()));
     }
 }

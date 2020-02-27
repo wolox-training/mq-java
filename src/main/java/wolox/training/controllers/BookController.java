@@ -156,17 +156,6 @@ public class BookController {
         if (bookDto == null)
             throw new EntityNotFoundException(Book.class);
 
-        Book newBook = new Book(
-            bookDto.getTitle(),
-            String.join(", ", bookDto.getAuthors()),
-            "image",
-            bookDto.getSubtitile(),
-            String.join(", ", bookDto.getPublishers()),
-            bookDto.getPublishedYear(),
-            bookDto.getPages(),
-            isbn
-        );
-
-        return new ResponseEntity(bookRepository.save(newBook), HttpStatus.CREATED);
+        return new ResponseEntity(bookRepository.save(bookDto.getAsBook()), HttpStatus.CREATED);
     }
 }
