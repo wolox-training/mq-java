@@ -4,7 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static wolox.training.utils.Utils.asJsonString;
+import static wolox.training.utils.PropertyValidationUtils.asJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;

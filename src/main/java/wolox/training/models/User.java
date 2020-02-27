@@ -1,6 +1,6 @@
 package wolox.training.models;
 
-import static wolox.training.utils.Utils.*;
+import static wolox.training.utils.PropertyValidationUtils.*;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.annotations.ApiModel;
@@ -21,6 +21,7 @@ import javax.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import wolox.training.exceptions.BookAlreadyOwnedException;
 import wolox.training.exceptions.BookNotOwnedException;
@@ -31,16 +32,8 @@ import wolox.training.utils.LocalDateSerializer;
 @Table(name = "users")
 @ApiModel(description = "Model of a user that may own books")
 @EqualsAndHashCode
+@NoArgsConstructor
 public class User {
-    private User(){}
-
-    public User(String name, String username, LocalDate birthDate, String encodedPassword) {
-        setUsername(username);
-        setName(name);
-        setBirthDate(birthDate);
-        setPassword(encodedPassword);
-    }
-
     @Id
     @Setter(AccessLevel.PRIVATE)
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -61,22 +54,13 @@ public class User {
 
     @Column(nullable = false)
     private String username;
-    public void setUsername(String username){
-        this.username = checkString(username, "username");
-    }
 
     @Column(nullable = false)
     private String name;
-    public void setName(String name){
-        this.name = checkString(name, "name");
-    }
 
     @Column(nullable = false)
     @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate birthDate;
-    public void setBirthDate(LocalDate birthDate){
-        this.birthDate = checkLocalDate(birthDate, "birthDate");
-    }
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -85,6 +69,25 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "book_id"))
     @Setter(AccessLevel.PRIVATE)
     private Set<Book> books = new HashSet<Book>();
+
+    public User(String name, String username, LocalDate birthDate, String encodedPassword) {
+        setUsername(username);
+        setName(name);
+        setBirthDate(birthDate);
+        setPassword(encodedPassword);
+    }
+
+    private void setUsername(String username){
+        this.username = checkString(username, "username");
+    }
+
+    private void setName(String name){
+        this.name = checkString(name, "name");
+    }
+
+    private void setBirthDate(LocalDate birthDate){
+        this.birthDate = checkLocalDate(birthDate, "birthDate");
+    }
 
     public Set<Book> getBooks() {
         return (Set<Book>) Collections.unmodifiableSet(books);
