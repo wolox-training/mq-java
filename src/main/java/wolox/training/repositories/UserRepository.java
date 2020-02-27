@@ -7,7 +7,4 @@ import wolox.training.models.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByUsername(@NotNull String username);
-
-    @Override
-    <S extends User> S save(S entity);
 }
