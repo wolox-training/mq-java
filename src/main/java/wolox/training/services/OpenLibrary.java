@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -15,6 +16,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import wolox.training.exceptions.EntityNotFoundException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 import wolox.training.services.dtos.OpenLibraryBookDTO;
@@ -34,14 +36,18 @@ public class OpenLibrary {
         restTemplate = restTemplateBuilder.build();
     }
 
-    private String doIsbnRequest(String isbn) throws Exception {
+    private String doIsbnRequest(String isbn) throws IOException {
         String baseUrl = env.getProperty("services.openLibraryBooksBaseUrl");
         String url = baseUrl + "/books?bibkeys=ISBN:" + isbn + "&format=json&jscmd=data";
         URL urlPath = new URL(url);
         HttpURLConnection con =(HttpURLConnection) urlPath.openConnection();
         con.setRequestMethod("GET");
-        if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            return null;
+        int code = con.getResponseCode();
+        if (code == HttpURLConnection.HTTP_NOT_FOUND) {
+            throw new EntityNotFoundException(Book.class);
+        }
+        if (code != HttpURLConnection.HTTP_OK) {
+            throw new IOException();
         }
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
         String inputLine;
@@ -107,8 +113,10 @@ public class OpenLibrary {
             String jsonString = doIsbnRequest(isbn);
             OpenLibraryBookDTO dto = buildDTOFromJsonString(isbn, jsonString);
             return Optional.of(bookRepository.save(dto.getAsBook()));
-        } catch (Exception e) {
-            return null;
+        } catch (IOException e) {
+            return Optional.empty();
+        } catch (Exception e){
+            throw e;
         }
     }
 }
