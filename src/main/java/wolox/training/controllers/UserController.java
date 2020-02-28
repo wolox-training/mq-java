@@ -1,6 +1,5 @@
 package wolox.training.controllers;
 
-import static wolox.training.configuration.ServerSecurityConfig.encodePassword;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import io.swagger.annotations.Api;
@@ -72,7 +71,7 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@RequestBody User user) {
-        user.setPassword(encodePassword(user.getPassword()));
+        user.setPassword(user.getPassword());
         User dbUser = userRepository.save(user);
         return dbUser;
     }
@@ -175,8 +174,9 @@ public class UserController {
     public void updatePassword(@PathVariable Long id, @RequestBody User user) {
         if (user.getId() != id)
             throw new IdMismatchException(User.class);
-        User dbUser = userRepository.findById(id).orElse(null);
-        dbUser.setPassword(encodePassword(user.getPassword()));
+        User dbUser = userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
+        dbUser.setPassword(user.getPassword());
         userRepository.save(dbUser);
     }
 
