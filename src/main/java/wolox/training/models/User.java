@@ -46,7 +46,7 @@ public class User {
     @Column(nullable = false)
     private String role = "USER";
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     @Column(nullable = false)
@@ -96,12 +96,14 @@ public class User {
     }
 
     public void assignBook(Book book) {
-        if (!books.add(book))
+        if (!books.add(book)) {
             throw new BookAlreadyOwnedException(this, book);
+        }
     }
 
     public void deassignBook(Book book) {
-        if (!books.remove(book))
+        if (!books.remove(book)) {
             throw new BookNotOwnedException(this, book);
+        }
     }
 }

@@ -6,6 +6,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.util.Arrays;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.BookAlreadyOwnedException;
@@ -44,8 +47,9 @@ public class UserController {
      */
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String username) {
-        if (!isNullOrEmpty(username))
-            return userRepository.findByUsername(username);
+        if (!isNullOrEmpty(username)){
+            return Arrays.asList(userRepository.findByUsername(username));
+        }
         return userRepository.findAll();
     };
 
@@ -72,8 +76,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@RequestBody User user) {
         user.setPassword(user.getPassword());
-        User dbUser = userRepository.save(user);
-        return dbUser;
+        return userRepository.save(user);
     }
 
     /**
@@ -172,12 +175,26 @@ public class UserController {
     @PutMapping("/{id}/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updatePassword(@PathVariable Long id, @RequestBody User user) {
-        if (user.getId() != id)
+        if (user.getId() != id) {
             throw new IdMismatchException(User.class);
-        User dbUser = userRepository.findById(id)
+        }
+        User foundUser = userRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(User.class));
-        dbUser.setPassword(user.getPassword());
-        userRepository.save(dbUser);
+        foundUser.setPassword(user.getPassword());
+        userRepository.save(foundUser);
     }
 
+
+    /**
+     * Get's the current logged in {@link User}.
+     *
+     * @return the {@link User}
+     */
+    @GetMapping("/me")
+    @ResponseBody
+    public User getLoggedInUser(HttpServletRequest request) {
+        String username = request.getUserPrincipal().getName();
+        return userRepository.findByUsername(username)
+            .orElseThrow(()-> new EntityNotFoundException(User.class));
+    }
 }

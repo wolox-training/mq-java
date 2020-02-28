@@ -6,8 +6,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,9 +21,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.EntityNotFoundException;
+import wolox.training.exceptions.ExternalServiceException;
 import wolox.training.exceptions.IdMismatchException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
+import wolox.training.services.OpenLibrary;
+import wolox.training.services.dtos.OpenLibraryBookDTO;
 
 @RestController
 @RequestMapping("/api/books")
@@ -29,6 +34,9 @@ import wolox.training.repositories.BookRepository;
 public class BookController {
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private OpenLibrary openLibrary;
 
     /**
      * Find all books.
@@ -38,8 +46,9 @@ public class BookController {
      */
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String title) {
-        if (!isNullOrEmpty(title))
+        if (!isNullOrEmpty(title)) {
             return bookRepository.findByTitle(title);
+        }
         return bookRepository.findAll();
     };
 
@@ -105,5 +114,19 @@ public class BookController {
         bookRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(Book.class));
         bookRepository.save(book);
+    }
+
+    @GetMapping("/isbn/{isbn}")
+    public ResponseEntity findByIsbn(@PathVariable String isbn) throws ExternalServiceException {
+        Optional<Book> book = bookRepository.findByIsbn(isbn);
+        if (book.isPresent()) {
+            return new ResponseEntity(book.get(), HttpStatus.OK);
+        }
+
+        return new ResponseEntity(
+            openLibrary.tryGetBookByIsbn(isbn)
+                .orElseThrow(() -> new EntityNotFoundException(Book.class)),
+            HttpStatus.CREATED
+        );
     }
 }

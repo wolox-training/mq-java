@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,6 +30,7 @@ import wolox.training.factories.UserFactory;
 import wolox.training.models.Book;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
+import wolox.training.services.OpenLibrary;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = UserController.class)
@@ -43,6 +45,9 @@ public class UserControllerTest {
 
     @MockBean
     private BookController mockBookController;
+
+    @MockBean
+    private OpenLibrary openLibrary;
 
     @Test
     public void whenPostingAUser_thenReturnsTheUser() throws Exception {
@@ -124,9 +129,8 @@ public class UserControllerTest {
     public void whenRequestingUsersWithUsernameQueryParam_thenReturnsMatchingUsers() throws Exception {
         User troy = UserFactory.getUserTroy();
         User karen = UserFactory.getUserKaren();
-        Mockito.when(mockUserRepository.findByUsername(troy.getUsername())).thenReturn(
-            new ArrayList<User>(Arrays.asList(troy))
-        );
+        Mockito.when(mockUserRepository.findByUsername(troy.getUsername()))
+            .thenReturn(Optional.of(troy));
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/users")
             .param("username", troy.getUsername())
