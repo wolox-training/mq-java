@@ -175,7 +175,8 @@ public class UserController {
     public void updatePassword(@PathVariable Long id, @RequestBody User user) {
         if (user.getId() != id)
             throw new IdMismatchException(User.class);
-        User dbUser = userRepository.findById(id).orElse(null);
+        User dbUser = userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
         dbUser.setPassword(encodePassword(user.getPassword()));
         userRepository.save(dbUser);
     }
