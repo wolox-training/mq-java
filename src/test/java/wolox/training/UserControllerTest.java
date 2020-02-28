@@ -1,12 +1,12 @@
 package wolox.training;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static wolox.training.utils.PropertyValidationUtils.asJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
@@ -18,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -45,19 +46,20 @@ public class UserControllerTest {
 
     @Test
     public void whenPostingAUser_thenReturnsTheUser() throws Exception {
-        User userToCreate = new User("ho", "asd", LocalDate.now());
-        Mockito.when(mockUserRepository.save(userToCreate)).thenReturn(userToCreate);
+        User troy = UserFactory.getUserTroy();
+        Mockito.when(mockUserRepository.save(any(User.class))).thenReturn(troy);
         mockMvc.perform( MockMvcRequestBuilders
             .post("/api/users")
-            .content(asJsonString(userToCreate))
+            .content(asJsonString(troy))
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.name").value(userToCreate.getName()))
-            .andExpect(jsonPath("$.username").value(userToCreate.getUsername()))
-            .andExpect(content().string(asJsonString(userToCreate)));
+            .andExpect(jsonPath("$.name").value(troy.getName()))
+            .andExpect(jsonPath("$.username").value(troy.getUsername()))
+            .andExpect(content().string(asJsonString(troy)));
     }
 
+    @WithMockUser
     @Test
     public void whenGettingAllUsers_thenReturnsAllUsers() throws Exception {
         User troy = UserFactory.getUserTroy();
@@ -77,6 +79,7 @@ public class UserControllerTest {
             );
     }
 
+    @WithMockUser
     @Test
     public void whenAssigningBook_thenRespondsNoContentAndAssignsBook() throws Exception {
         User troy = UserFactory.getUserTroy();
@@ -95,6 +98,7 @@ public class UserControllerTest {
             .isEqualTo(book.getTitle());
     }
 
+    @WithMockUser
     @Test
     public void whenDeassigningBook_thenRespondsNoContentAndDeassignsBook() throws Exception {
         User troy = UserFactory.getUserTroy();
@@ -115,6 +119,7 @@ public class UserControllerTest {
             .isEqualTo(null);
     }
 
+    @WithMockUser
     @Test
     public void whenRequestingUsersWithUsernameQueryParam_thenReturnsMatchingUsers() throws Exception {
         User troy = UserFactory.getUserTroy();
@@ -134,5 +139,32 @@ public class UserControllerTest {
             .andExpect(jsonPath(
                 String.format("$[?(@.username == \'%s\')]", karen.getUsername())).doesNotExist()
             );
+    }
+
+    @WithMockUser
+    @Test
+    public void whenChangingPassword_thenChangesPassword() throws Exception {
+        User troy = UserFactory.getUserTroy();
+        Mockito.when(mockUserRepository.findById(troy.getId())).thenReturn(Optional.of(troy));
+        Mockito.when(mockUserRepository.save(troy)).thenReturn(troy);
+
+        mockMvc.perform( MockMvcRequestBuilders
+            .put(String.format("/api/users/%d/password", troy.getId()))
+            .content(asJsonString(troy))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNoContent());
+    }
+
+    @WithMockUser
+    @Test
+    public void whenTryingToChangePasswordOfInexistentId_thenThrowsNotFoundException() throws Exception {
+        User troy = UserFactory.getUserTroy();
+        mockMvc.perform( MockMvcRequestBuilders
+            .put(String.format("/api/users/%d/password", troy.getId()))
+            .content(asJsonString(troy))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
     }
 }
