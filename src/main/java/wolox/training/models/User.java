@@ -42,15 +42,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    public void setPassword(String password){
-        this.password = checkString(password, "password");
-    }
-
     @Column(nullable = false)
     private String role = "USER";
-    public void setRole(String role){
-        this.role = checkString(role, "role");
-    }
 
     @Column(nullable = false)
     private String username;
@@ -81,8 +74,16 @@ public class User {
         this.username = checkString(username, "username");
     }
 
+    public void setPassword(String password){
+        this.password = checkString(password, "password");
+    }
+
     private void setName(String name){
         this.name = checkString(name, "name");
+    }
+
+    public void setRole(String role){
+        this.role = checkString(role, "role");
     }
 
     private void setBirthDate(LocalDate birthDate){
