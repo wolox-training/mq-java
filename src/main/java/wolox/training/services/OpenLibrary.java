@@ -9,11 +9,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import wolox.training.models.Book;
+import wolox.training.repositories.BookRepository;
 import wolox.training.services.dtos.OpenLibraryBookDTO;
 
 @Service
@@ -24,11 +27,14 @@ public class OpenLibrary {
     @Autowired
     private Environment env;
 
+    @Autowired
+    private BookRepository bookRepository;
+
     public OpenLibrary(RestTemplateBuilder restTemplateBuilder) {
         restTemplate = restTemplateBuilder.build();
     }
 
-    private JsonElement doIsbnRequest(String isbn) throws Exception {
+    private String doIsbnRequest(String isbn) throws Exception {
         String baseUrl = env.getProperty("services.openLibraryBooksBaseUrl");
         String url = baseUrl + "/books?bibkeys=ISBN:" + isbn + "&format=json&jscmd=data";
         URL urlPath = new URL(url);
@@ -43,34 +49,58 @@ public class OpenLibrary {
             response.append(inputLine);
         in.close();
 
-        return JsonParser.parseString(response.toString()).getAsJsonObject();
+        return response.toString();
     }
 
+    public static OpenLibraryBookDTO buildDTOFromJsonString(String isbn, String jsonString){
+        JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
+        JsonObject jsonBook = json.get(String.format("ISBN:%s", isbn)).getAsJsonObject();
 
-    public OpenLibraryBookDTO tryGetBookByIsbn(String isbn) {
+        List<String> authors = new ArrayList<>();
+        jsonBook.get("authors").getAsJsonArray().forEach(i -> {
+            authors.add(i.getAsJsonObject().get("name").getAsString());
+        });
+
+        List<String> publishers = new ArrayList<>();
+        jsonBook.get("publishers").getAsJsonArray().forEach(i -> {
+            publishers.add(i.getAsJsonObject().get("name").getAsString());
+        });
+        JsonElement notes = jsonBook.get("notes");
+        String subtitle = "subtitle";
+        if (notes != null)
+            subtitle = notes.getAsString();
+
+        JsonElement titleJson = jsonBook.get("title");
+        String title = "";
+        if (titleJson != null)
+            title = titleJson.getAsString();
+
+        JsonElement publishDate = jsonBook.get("publish_date");
+        String published = "";
+        if (publishDate != null)
+            published = publishDate.getAsString();
+
+        JsonElement pagesJson = jsonBook.get("number_of_pages");
+        int pages = 0;
+        if (pagesJson != null)
+            pages = pagesJson.getAsInt();
+
+        return new OpenLibraryBookDTO(
+            isbn,
+            title,
+            subtitle,
+            publishers,
+            authors,
+            published,
+            pages
+        );
+    }
+
+    public Optional<Book> tryGetBookByIsbn(String isbn) {
         try {
-            JsonObject json = doIsbnRequest(isbn).getAsJsonObject();
-            JsonObject jsonBook = json.get(String.format("ISBN:%s", isbn)).getAsJsonObject();
-
-            List<String> authors = new ArrayList<>();
-            jsonBook.get("authors").getAsJsonArray().forEach(i -> {
-                authors.add(i.getAsJsonObject().get("name").getAsString());
-            });
-
-            List<String> publishers = new ArrayList<>();
-            jsonBook.get("publishers").getAsJsonArray().forEach(i -> {
-                publishers.add(i.getAsJsonObject().get("name").getAsString());
-            });
-
-            return new OpenLibraryBookDTO(
-                isbn,
-                jsonBook.get("title").getAsString(),
-                jsonBook.get("notes").getAsString(),
-                publishers,
-                authors,
-                jsonBook.get("publish_date").getAsString(),
-                jsonBook.get("number_of_pages").getAsInt()
-            );
+            String jsonString = doIsbnRequest(isbn);
+            OpenLibraryBookDTO dto = buildDTOFromJsonString(isbn, jsonString);
+            return Optional.of(bookRepository.save(dto.getAsBook()));
         } catch (Exception e) {
             return null;
         }

@@ -45,8 +45,9 @@ public class BookController {
      */
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String title) {
-        if (!isNullOrEmpty(title))
+        if (!isNullOrEmpty(title)) {
             return bookRepository.findByTitle(title);
+        }
         return bookRepository.findAll();
     };
 
@@ -115,27 +116,16 @@ public class BookController {
     }
 
     @GetMapping("/isbn/{isbn}")
-    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity findByIsbn(@PathVariable String isbn){
         Optional<Book> book = bookRepository.findByIsbn(isbn);
-        if (book.isPresent())
+        if (book.isPresent()){
             return new ResponseEntity(book.get(), HttpStatus.OK);
+        }
 
-        OpenLibraryBookDTO bookDto = openLibrary.tryGetBookByIsbn(isbn);
-        if (bookDto == null)
-            throw new EntityNotFoundException(Book.class);
-
-        Book newBook = new Book(
-            bookDto.getTitle(),
-            String.join(", ", bookDto.getAuthors()),
-            "image",
-            bookDto.getSubtitile(),
-            String.join(", ", bookDto.getPublishers()),
-            bookDto.getPublishedYear(),
-            bookDto.getPages(),
-            isbn
+        return new ResponseEntity(
+            openLibrary.tryGetBookByIsbn(isbn)
+                .orElseThrow(() -> new EntityNotFoundException(Book.class)),
+            HttpStatus.CREATED
         );
-
-        return new ResponseEntity(bookRepository.save(newBook), HttpStatus.CREATED);
     }
 }
