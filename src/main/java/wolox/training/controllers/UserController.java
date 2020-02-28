@@ -85,8 +85,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@RequestBody User user) {
         user.setPassword(user.getPassword());
-        User dbUser = userRepository.save(user);
-        return dbUser;
+        return userRepository.save(user);
     }
 
     /**
@@ -185,12 +184,13 @@ public class UserController {
     @PutMapping("/{id}/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updatePassword(@PathVariable Long id, @RequestBody User user) {
-        if (user.getId() != id)
+        if (user.getId() != id) {
             throw new IdMismatchException(User.class);
-        User dbUser = userRepository.findById(id)
+        }
+        User foundUser = userRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(User.class));
-        dbUser.setPassword(user.getPassword());
-        userRepository.save(dbUser);
+        foundUser.setPassword(user.getPassword());
+        userRepository.save(foundUser);
     }
 
 
@@ -203,9 +203,7 @@ public class UserController {
     @ResponseBody
     public User getLoggedInUser(HttpServletRequest request) {
         String username = request.getUserPrincipal().getName();
-        User user = userRepository.findByUsername(username);
-        if (user == null)
-            throw new EntityNotFoundException(User.class);
-        return user;
+        return userRepository.findByUsername(username)
+            .orElseThrow(()-> new EntityNotFoundException(User.class));
     }
 }
