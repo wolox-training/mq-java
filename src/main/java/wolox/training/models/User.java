@@ -1,5 +1,6 @@
 package wolox.training.models;
 
+import static wolox.training.configuration.ServerSecurityConfig.encodePassword;
 import static wolox.training.utils.PropertyValidationUtils.*;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -42,15 +43,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    public void setPassword(String password){
-        this.password = checkString(password, "password");
-    }
-
     @Column(nullable = false)
     private String role = "USER";
-    public void setRole(String role){
-        this.role = checkString(role, "role");
-    }
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -70,19 +64,27 @@ public class User {
     @Setter(AccessLevel.PRIVATE)
     private Set<Book> books = new HashSet<Book>();
 
-    public User(String name, String username, LocalDate birthDate, String encodedPassword) {
+    public User(String name, String username, LocalDate birthDate, String password) {
         setUsername(username);
         setName(name);
         setBirthDate(birthDate);
-        setPassword(encodedPassword);
+        setPassword(password);
     }
 
     private void setUsername(String username){
         this.username = checkString(username, "username");
     }
 
+    public void setPassword(String password){
+        this.password = encodePassword(checkString(password, "password"));
+    }
+
     private void setName(String name){
         this.name = checkString(name, "name");
+    }
+
+    public void setRole(String role){
+        this.role = checkString(role, "role");
     }
 
     private void setBirthDate(LocalDate birthDate){

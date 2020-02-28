@@ -113,7 +113,7 @@ public class BookRepositoryIntegrationTest {
     }
 
     @Test
-    public void whenSearchingByPublisherGenreAndYearCustom_thenReturnsMatchingBook() {
+    public void whenSearchingByPublisherGenreAndYearCustom_thenReturnsMatchingBook(){
         String greatestPublisher = "TheBestPublisher";
         Book coolBook = new Book(
             "Some cool Book",
