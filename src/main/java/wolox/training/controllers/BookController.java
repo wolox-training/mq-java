@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.EntityNotFoundException;
+import wolox.training.exceptions.ExternalServiceException;
 import wolox.training.exceptions.IdMismatchException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
@@ -142,16 +143,16 @@ public class BookController {
     }
 
     @GetMapping("/isbn/{isbn}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity findByIsbn(@PathVariable String isbn){
+    public ResponseEntity findByIsbn(@PathVariable String isbn) throws ExternalServiceException {
         Optional<Book> book = bookRepository.findByIsbn(isbn);
-        if (book.isPresent())
+        if (book.isPresent()) {
             return new ResponseEntity(book.get(), HttpStatus.OK);
+        }
 
-        OpenLibraryBookDTO bookDto = openLibrary.tryGetBookByIsbn(isbn);
-        if (bookDto == null)
-            throw new EntityNotFoundException(Book.class);
-
-        return new ResponseEntity(bookRepository.save(bookDto.getAsBook()), HttpStatus.CREATED);
+        return new ResponseEntity(
+            openLibrary.tryGetBookByIsbn(isbn)
+                .orElseThrow(() -> new EntityNotFoundException(Book.class)),
+            HttpStatus.CREATED
+        );
     }
 }
