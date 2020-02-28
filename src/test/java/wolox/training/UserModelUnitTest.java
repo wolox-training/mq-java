@@ -1,7 +1,6 @@
 package wolox.training;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static wolox.training.configuration.ServerSecurityConfig.encodePassword;
 import static wolox.training.factories.BookFactory.getDefaultBook;
 import static wolox.training.factories.UserFactory.getUserTroy;
 
@@ -18,7 +17,7 @@ public class UserModelUnitTest {
     @Test
     public void whenTryingToSetEmptyName_thenItFails() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new User(null, "someUsername", LocalDate.now(), encodePassword("123"));
+            new User(null, "someUsername", LocalDate.now(), "123");
         });
         assertThat(exception.getMessage()).isEqualTo("name cannot be null!");
     }
@@ -26,7 +25,7 @@ public class UserModelUnitTest {
     @Test
     public void whenTryingToBuildWithoutUsername_thenItFails() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new User("SomeName", null, LocalDate.now(), encodePassword("123"));
+            new User("SomeName", null, LocalDate.now(), "123");
         });
         assertThat(exception.getMessage()).isEqualTo("username cannot be null!");
     }
@@ -34,7 +33,7 @@ public class UserModelUnitTest {
     @Test
     public void whenTryingToBuildWithEmptyStringAsName_thenItFails() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new User("", "someUsername", LocalDate.now(), encodePassword("123"));
+            new User("", "someUsername", LocalDate.now(), "123");
         });
         assertThat(exception.getMessage()).isEqualTo("name cannot be empty!");
     }
@@ -42,7 +41,7 @@ public class UserModelUnitTest {
     @Test
     public void whenTryingToBuildWithNullBirthDate_thenItFails() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new User("someName", "someUsername", null, encodePassword("123"));
+            new User("someName", "someUsername", null, "123");
         });
         assertThat(exception.getMessage()).isEqualTo("birthDate cannot be null!");
     }

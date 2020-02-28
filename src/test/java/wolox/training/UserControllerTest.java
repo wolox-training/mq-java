@@ -194,4 +194,31 @@ public class UserControllerTest {
                 String.format("$.content.[?(@.username == \'%s\')]", karen.getUsername())).doesNotExist()
             );
     }
+
+    @WithMockUser
+    @Test
+    public void whenChangingPassword_thenChangesPassword() throws Exception {
+        User troy = UserFactory.getUserTroy();
+        Mockito.when(mockUserRepository.findById(troy.getId())).thenReturn(Optional.of(troy));
+        Mockito.when(mockUserRepository.save(troy)).thenReturn(troy);
+
+        mockMvc.perform( MockMvcRequestBuilders
+            .put(String.format("/api/users/%d/password", troy.getId()))
+            .content(asJsonString(troy))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNoContent());
+    }
+
+    @WithMockUser
+    @Test
+    public void whenTryingToChangePasswordOfInexistentId_thenThrowsNotFoundException() throws Exception {
+        User troy = UserFactory.getUserTroy();
+        mockMvc.perform( MockMvcRequestBuilders
+            .put(String.format("/api/users/%d/password", troy.getId()))
+            .content(asJsonString(troy))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
 }
