@@ -17,6 +17,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import wolox.training.exceptions.EntityNotFoundException;
+import wolox.training.exceptions.ExternalServiceException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 import wolox.training.services.dtos.OpenLibraryBookDTO;
@@ -36,7 +37,7 @@ public class OpenLibrary {
         restTemplate = restTemplateBuilder.build();
     }
 
-    private String doIsbnRequest(String isbn) throws IOException {
+    private String doIsbnRequest(String isbn) throws IOException, ExternalServiceException {
         String baseUrl = env.getProperty("services.openLibraryBooksBaseUrl");
         String url = baseUrl + "/books?bibkeys=ISBN:" + isbn + "&format=json&jscmd=data";
         URL urlPath = new URL(url);
@@ -47,7 +48,7 @@ public class OpenLibrary {
             throw new EntityNotFoundException(Book.class);
         }
         if (code != HttpURLConnection.HTTP_OK) {
-            throw new IOException();
+            throw new ExternalServiceException(OpenLibrary.class, code);
         }
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
         String inputLine;
@@ -108,7 +109,7 @@ public class OpenLibrary {
         );
     }
 
-    public Optional<Book> tryGetBookByIsbn(String isbn) {
+    public Optional<Book> tryGetBookByIsbn(String isbn) throws ExternalServiceException {
         try {
             String jsonString = doIsbnRequest(isbn);
             OpenLibraryBookDTO dto = buildDTOFromJsonString(isbn, jsonString);
@@ -116,7 +117,7 @@ public class OpenLibrary {
         } catch (IOException e) {
             return Optional.empty();
         } catch (Exception e){
-            throw e;
+            throw new ExternalServiceException(OpenLibrary.class, e);
         }
     }
 }
