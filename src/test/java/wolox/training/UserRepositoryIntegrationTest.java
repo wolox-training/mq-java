@@ -35,7 +35,8 @@ public class UserRepositoryIntegrationTest {
         entityManager.persist(troy);
         entityManager.flush();
 
-        User found = userRepository.findByUsername(troy.getUsername());
+        User found = userRepository.findByUsername(troy.getUsername())
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
         assertThat(found.getName()).isEqualTo(troy.getName());
         assertThat(found.getUsername()).isEqualTo(troy.getUsername());
         assertThat(found.getBirthDate()).isEqualTo(troy.getBirthDate());
@@ -68,10 +69,11 @@ public class UserRepositoryIntegrationTest {
         entityManager.persist(troy);
         entityManager.flush();
 
-        User dbTroy = userRepository.findByUsername(troy.getUsername());
-        assertThat(dbTroy.getName()).isEqualTo(troy.getName());
-        userRepository.delete(troy);
-        assertThat(userRepository.findById(dbTroy.getId())).isEqualTo(Optional.empty());
+        User foundUser = userRepository.findByUsername(troy.getUsername())
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
+        assertThat(foundUser.getName()).isEqualTo(foundUser.getName());
+        userRepository.delete(foundUser);
+        assertThat(userRepository.findById(foundUser.getId())).isEqualTo(Optional.empty());
     }
 
     @Test
@@ -81,10 +83,11 @@ public class UserRepositoryIntegrationTest {
         entityManager.persist(troy);
         entityManager.flush();
 
-        User dbTroy = userRepository.findByUsername(troy.getUsername());
-        assertThat(dbTroy.getName()).isEqualTo(troy.getName());
+        User foundUser = userRepository.findByUsername(troy.getUsername())
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
+        assertThat(foundUser.getName()).isEqualTo(troy.getName());
         userRepository.deleteById(troy.getId());
-        assertThat(userRepository.findById(dbTroy.getId())).isEqualTo(Optional.empty());
+        assertThat(userRepository.findById(foundUser.getId())).isEqualTo(Optional.empty());
     }
 
     @Test
@@ -96,13 +99,13 @@ public class UserRepositoryIntegrationTest {
         entityManager.persist(karen);
         entityManager.flush();
 
-        User dbTroy = userRepository.findByBirthDateBetweenAndNameContainingIgnoreCase(
+        User foundUser = userRepository.findByBirthDateBetweenAndNameContainingIgnoreCase(
             LocalDate.now().minusDays(1),
             LocalDate.now().plusDays(1),
             "ro"
         ).stream().findFirst().orElseThrow(() -> new EntityNotFoundException(User.class));
 
-        assertThat(dbTroy.getName()).isEqualTo(troy.getName());
+        assertThat(foundUser.getName()).isEqualTo(troy.getName());
     }
 
     @Test

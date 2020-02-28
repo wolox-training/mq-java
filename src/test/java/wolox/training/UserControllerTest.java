@@ -130,7 +130,7 @@ public class UserControllerTest {
         User troy = UserFactory.getUserTroy();
         User karen = UserFactory.getUserKaren();
         Mockito.when(mockUserRepository.findByUsername(troy.getUsername()))
-            .thenReturn(troy);
+            .thenReturn(Optional.of(troy));
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/users")
             .param("username", troy.getUsername())

@@ -96,12 +96,14 @@ public class User {
     }
 
     public void assignBook(Book book) {
-        if (!books.add(book))
+        if (!books.add(book)) {
             throw new BookAlreadyOwnedException(this, book);
+        }
     }
 
     public void deassignBook(Book book) {
-        if (!books.remove(book))
+        if (!books.remove(book)) {
             throw new BookNotOwnedException(this, book);
+        }
     }
 }
