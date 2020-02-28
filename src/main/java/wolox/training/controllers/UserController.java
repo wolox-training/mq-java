@@ -1,14 +1,12 @@
 package wolox.training.controllers;
 
-import static wolox.training.configuration.ServerSecurityConfig.encodePassword;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.security.Principal;
 import java.util.Arrays;
-import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,7 +29,6 @@ import wolox.training.models.Book;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
 
-
 @RestController
 @RequestMapping("/api/users")
 @Api
@@ -50,8 +47,9 @@ public class UserController {
      */
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String username) {
-        if (username != null && !username.isEmpty())
+        if (!isNullOrEmpty(username)){
             return Arrays.asList(userRepository.findByUsername(username));
+        }
         return userRepository.findAll();
     };
 
@@ -64,10 +62,8 @@ public class UserController {
      */
     @GetMapping("/{id}")
     public User findOne(@PathVariable Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (!user.isPresent())
-            throw new EntityNotFoundException(User.class);
-        return user.get();
+        return userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
     }
 
     /**
@@ -79,7 +75,7 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@RequestBody User user) {
-        user.setPassword(encodePassword(user.getPassword()));
+        user.setPassword(user.getPassword());
         User dbUser = userRepository.save(user);
         return dbUser;
     }
@@ -93,9 +89,8 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (!user.isPresent())
-            throw new EntityNotFoundException(User.class);
+        userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
         userRepository.deleteById(id);
     }
 
@@ -114,9 +109,8 @@ public class UserController {
         if (user.getId() != id) {
             throw new IdMismatchException(User.class);
         }
-        Optional<User> dbUser = userRepository.findById(id);
-        if (!dbUser.isPresent())
-            throw new EntityNotFoundException(User.class);
+        userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
         userRepository.save(user);
     }
 
@@ -184,8 +178,9 @@ public class UserController {
     public void updatePassword(@PathVariable Long id, @RequestBody User user) {
         if (user.getId() != id)
             throw new IdMismatchException(User.class);
-        User dbUser = userRepository.findById(id).orElse(null);
-        dbUser.setPassword(encodePassword(user.getPassword()));
+        User dbUser = userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(User.class));
+        dbUser.setPassword(user.getPassword());
         userRepository.save(dbUser);
     }
 
