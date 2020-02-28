@@ -10,16 +10,16 @@ public class ExternalServiceException extends Exception {
 
     private Class thrownBy;
 
-    private int code;
+    private int httpCode;
 
     public ExternalServiceException(Class thrownBy, Exception exception) {
         this.thrownBy = thrownBy;
         this.exception = exception;
     }
 
-    public ExternalServiceException(Class thrownBy, int Code) {
+    public ExternalServiceException(Class thrownBy, int httpCode) {
         this.thrownBy = thrownBy;
-        this.code = code;
+        this.httpCode = httpCode;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class ExternalServiceException extends Exception {
         if (exception != null) {
             return String.format("%s threw %s", thrownBy.getName(), exception.toString());
         } else {
-            return String.format("%s got HTTP code %d", thrownBy.getName(), code);
+            return String.format("%s got HTTP code %d", thrownBy.getName(), httpCode);
         }
     }
 }
