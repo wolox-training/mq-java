@@ -44,8 +44,9 @@ public class UserController {
      */
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String username) {
-        if (!isNullOrEmpty(username))
+        if (!isNullOrEmpty(username)) {
             return userRepository.findByUsername(username);
+        }
         return userRepository.findAll();
     };
 
@@ -172,8 +173,9 @@ public class UserController {
     @PutMapping("/{id}/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updatePassword(@PathVariable Long id, @RequestBody User user) {
-        if (user.getId() != id)
+        if (user.getId() != id) {
             throw new IdMismatchException(User.class);
+        }
         User dbUser = userRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(User.class));
         dbUser.setPassword(user.getPassword());

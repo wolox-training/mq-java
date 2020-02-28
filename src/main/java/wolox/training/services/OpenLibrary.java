@@ -40,13 +40,15 @@ public class OpenLibrary {
         URL urlPath = new URL(url);
         HttpURLConnection con =(HttpURLConnection) urlPath.openConnection();
         con.setRequestMethod("GET");
-        if (con.getResponseCode() != HttpURLConnection.HTTP_OK)
+        if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
             return null;
+        }
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
         String inputLine;
         StringBuffer response = new StringBuffer();
-        while ((inputLine = in.readLine()) != null)
+        while ((inputLine = in.readLine()) != null) {
             response.append(inputLine);
+        }
         in.close();
 
         return response.toString();
@@ -67,23 +69,27 @@ public class OpenLibrary {
         });
         JsonElement notes = jsonBook.get("notes");
         String subtitle = "subtitle";
-        if (notes != null)
+        if (notes != null) {
             subtitle = notes.getAsString();
+        }
 
         JsonElement titleJson = jsonBook.get("title");
         String title = "";
-        if (titleJson != null)
+        if (titleJson != null) {
             title = titleJson.getAsString();
+        }
 
         JsonElement publishDate = jsonBook.get("publish_date");
         String published = "";
-        if (publishDate != null)
+        if (publishDate != null) {
             published = publishDate.getAsString();
+        }
 
         JsonElement pagesJson = jsonBook.get("number_of_pages");
         int pages = 0;
-        if (pagesJson != null)
+        if (pagesJson != null) {
             pages = pagesJson.getAsInt();
+        }
 
         return new OpenLibraryBookDTO(
             isbn,

@@ -118,7 +118,7 @@ public class BookController {
     @GetMapping("/isbn/{isbn}")
     public ResponseEntity findByIsbn(@PathVariable String isbn){
         Optional<Book> book = bookRepository.findByIsbn(isbn);
-        if (book.isPresent()){
+        if (book.isPresent()) {
             return new ResponseEntity(book.get(), HttpStatus.OK);
         }
 
