@@ -90,7 +90,6 @@ public class UserRepositoryIntegrationTest {
     @Test
     public void whenSearchingByBirthDateBetweenAndNameContainingIgnoreCase_thenReturnsUser() {
         User troy = getUserTroy();
-        troy.setName("qwertyuiop");
         User karen = getUserKaren();
 
         entityManager.persist(troy);
@@ -100,7 +99,7 @@ public class UserRepositoryIntegrationTest {
         User dbTroy = userRepository.findByBirthDateBetweenAndNameContainingIgnoreCase(
             LocalDate.now().minusDays(1),
             LocalDate.now().plusDays(1),
-            "rtyu"
+            "ro"
         ).stream().findFirst().orElseThrow(() -> new EntityNotFoundException(User.class));
 
         assertThat(dbTroy.getName()).isEqualTo(troy.getName());
@@ -109,10 +108,20 @@ public class UserRepositoryIntegrationTest {
     @Test
     public void whenSearchingByBirthDateBetweenAndNameContainingIgnoreCaseCustom_thenReturnsUser() {
         LocalDate now = LocalDate.now();
-        User troy = getUserTroy();
-        troy.setBirthDate(now);
-        User karen = getUserKaren();
-        karen.setBirthDate(now.minusDays(10));
+        User troy = new User(
+            "Troy",
+            "WonderfulTroy",
+            now,
+            "troy's password"
+        );
+
+        User karen = new User(
+            "Karen",
+            "SillyKaren",
+            now.minusDays(10),
+            "karen's password"
+        );
+
         entityManager.persist(karen);
         entityManager.persist(troy);
         entityManager.flush();

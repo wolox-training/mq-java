@@ -1,5 +1,7 @@
 package wolox.training.controllers;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -43,7 +45,7 @@ public class BookController {
      */
     @GetMapping
     public Iterable findAll(@RequestParam(required = false) String title) {
-        if (title != null && !title.isEmpty())
+        if (!isNullOrEmpty(title))
             return bookRepository.findByTitle(title);
         return bookRepository.findAll();
     };
@@ -57,10 +59,8 @@ public class BookController {
      */
     @GetMapping("/{id}")
     public Book findOne(@PathVariable Long id) {
-        Optional<Book> book = bookRepository.findById(id);
-        if (!book.isPresent())
-            throw new EntityNotFoundException(Book.class);
-        return book.get();
+        return bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Book.class));
     }
 
     /**
@@ -84,9 +84,8 @@ public class BookController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        Optional<Book> book = bookRepository.findById(id);
-        if (!book.isPresent())
-            throw new EntityNotFoundException(Book.class);
+        bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Book.class));
         bookRepository.deleteById(id);
     }
 
@@ -110,9 +109,8 @@ public class BookController {
         if (book.getId() != id) {
             throw new IdMismatchException(Book.class);
         }
-        Optional<Book> dbBook = bookRepository.findById(id);
-        if (!dbBook.isPresent())
-            throw new EntityNotFoundException(Book.class);
+        bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Book.class));
         bookRepository.save(book);
     }
 
