@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = Replace.NONE)
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 public class BookRepositoryIntegrationTest {
 
     @Autowired
@@ -68,9 +68,9 @@ public class BookRepositoryIntegrationTest {
         entityManager.persist(book);
         entityManager.flush();
 
-        Book dbBook = bookRepository.findByTitle(book.getTitle())
+        Book foundBook = bookRepository.findByTitle(book.getTitle())
             .stream().findFirst().orElse(null);
-        assertThat(dbBook.getIsbn()).isEqualTo(book.getIsbn());
+        assertThat(foundBook.getIsbn()).isEqualTo(book.getIsbn());
         bookRepository.delete(book);
         assertThat(bookRepository.findById(book.getId())).isEqualTo(Optional.empty());
     }
@@ -82,9 +82,9 @@ public class BookRepositoryIntegrationTest {
         entityManager.persist(book);
         entityManager.flush();
 
-        Book dbBook = bookRepository.findByTitle(book.getTitle())
+        Book foundBook = bookRepository.findByTitle(book.getTitle())
             .stream().findFirst().orElse(null);
-        assertThat(dbBook.getIsbn()).isEqualTo(book.getIsbn());
+        assertThat(foundBook.getIsbn()).isEqualTo(book.getIsbn());
         bookRepository.deleteById(book.getId());
         assertThat(bookRepository.findById(book.getId())).isEqualTo(Optional.empty());
     }
