@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,6 @@ import wolox.training.exceptions.IdMismatchException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 import wolox.training.services.OpenLibrary;
-import wolox.training.services.dtos.OpenLibraryBookDTO;
 
 @RestController
 @RequestMapping("/api/books")
@@ -52,7 +52,7 @@ public class BookController {
      * @return the found books
      */
     @GetMapping
-    public Iterable findAll(
+    public Page<Book> findAll(
         Pageable pageable,
         @RequestParam(required = false) String title,
         @RequestParam(required = false) String author,
