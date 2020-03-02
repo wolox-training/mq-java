@@ -9,15 +9,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -69,18 +72,28 @@ public class UserControllerTest {
     public void whenGettingAllUsers_thenReturnsAllUsers() throws Exception {
         User troy = UserFactory.getUserTroy();
         User karen = UserFactory.getUserKaren();
-        Mockito.when(mockUserRepository.findAll()).thenReturn(new ArrayList<User>(Arrays.asList(troy, karen)));
+
+        List<User> users = new ArrayList<User>(Arrays.asList(troy, karen));
+        Page<User> pagedResponse = new PageImpl(users);
+        Mockito.when(mockUserRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            PageRequest.of(0, 20)
+        )).thenReturn(pagedResponse);
+
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/users")
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isMap())
             .andExpect(jsonPath(
-                String.format("$[?(@.username == \'%s\')]", troy.getUsername())).exists()
+                String.format("$.content.[?(@.username == \'%s\')]", troy.getUsername())).exists()
             )
             .andExpect(jsonPath(
-                String.format("$[?(@.username == \'%s\')]", karen.getUsername())).exists()
+                String.format("$.content.[?(@.username == \'%s\')]", karen.getUsername())).exists()
             );
     }
 
@@ -129,8 +142,16 @@ public class UserControllerTest {
     public void whenRequestingUsersWithUsernameQueryParam_thenReturnsMatchingUsers() throws Exception {
         User troy = UserFactory.getUserTroy();
         User karen = UserFactory.getUserKaren();
-        Mockito.when(mockUserRepository.findByUsername(troy.getUsername()))
-            .thenReturn(Optional.of(troy));
+        List<User> users = new ArrayList<User>(Arrays.asList(troy));
+        Page<User> pagedResponse = new PageImpl(users);
+        Mockito.when(mockUserRepository.findAllCustom(
+            null,
+            troy.getUsername(),
+            null,
+            null,
+            PageRequest.of(0, 20)
+        ))
+            .thenReturn(pagedResponse);
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/users")
             .param("username", troy.getUsername())
@@ -138,10 +159,39 @@ public class UserControllerTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath(
-                String.format("$[?(@.username == \'%s\')]", troy.getUsername())).exists()
+                String.format("$.content.[?(@.username == \'%s\')]", troy.getUsername())).exists()
             )
             .andExpect(jsonPath(
-                String.format("$[?(@.username == \'%s\')]", karen.getUsername())).doesNotExist()
+                String.format("$.content.[?(@.username == \'%s\')]", karen.getUsername())).doesNotExist()
+            );
+    }
+
+    @WithMockUser
+    @Test
+    public void whenRequestingAllUsersWithNameQueryParam_thenFiltersByName() throws Exception {
+        User troy = UserFactory.getUserTroy();
+        User karen = UserFactory.getUserKaren();
+        List<User> users = new ArrayList<User>(Arrays.asList(troy));
+        Page<User> pagedResponse = new PageImpl(users);
+        Mockito.when(mockUserRepository.findAllCustom(
+            troy.getName(),
+            null,
+            null,
+            null,
+            PageRequest.of(0, 20)
+        ))
+            .thenReturn(pagedResponse);
+        mockMvc.perform( MockMvcRequestBuilders
+            .get("/api/users")
+            .param("name", troy.getName())
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath(
+                String.format("$.content.[?(@.username == \'%s\')]", troy.getUsername())).exists()
+            )
+            .andExpect(jsonPath(
+                String.format("$.content.[?(@.username == \'%s\')]", karen.getUsername())).doesNotExist()
             );
     }
 

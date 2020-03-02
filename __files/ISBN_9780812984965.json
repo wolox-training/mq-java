@@ -1,0 +1,147 @@
+{
+  "ISBN:9780812984965": {
+    "publishers": [
+      {
+        "name": "Spiegel & Grau"
+      }
+    ],
+    "subtitle": "A Story of Justice and Redemption",
+    "links": [
+      {
+        "url": "http://bryanstevenson.com/the-book/",
+        "title": "Author's Book Page"
+      },
+      {
+        "url": "https://www.nytimes.com/2014/10/19/books/review/just-mercy-by-bryan-stevenson.html",
+        "title": "New York Times review"
+      },
+      {
+        "url": "https://www.washingtonpost.com/opinions/book-review-just-mercy-a-story-of-justice-and-redemption-by-bryan-stevenson/2014/10/23/5d590580-3f67-11e4-9587-5dafd96295f0_story.html",
+        "title": "Washington Post review"
+      }
+    ],
+    "title": "Just Mercy",
+    "url": "https://openlibrary.org/books/OL26424423M/Just_Mercy",
+    "identifiers": {
+      "openlibrary": [
+        "OL26424423M"
+      ],
+      "isbn_13": [
+        "9780812984965"
+      ],
+      "amazon": [
+        "081298496X"
+      ],
+      "isbn_10": [
+        "081298496X"
+      ],
+      "oclc": [
+        "974420779",
+        "932022268"
+      ],
+      "goodreads": [
+        "25430665"
+      ]
+    },
+    "cover": {
+      "small": "https://covers.openlibrary.org/b/id/8132205-S.jpg",
+      "large": "https://covers.openlibrary.org/b/id/8132205-L.jpg",
+      "medium": "https://covers.openlibrary.org/b/id/8132205-M.jpg"
+    },
+    "subjects": [
+      {
+        "url": "https://openlibrary.org/subjects/equal_justice_initiative",
+        "name": "Equal Justice Initiative"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/lawyers",
+        "name": "lawyers"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/law",
+        "name": "law"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/criminal_law",
+        "name": "criminal law"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/sentencing",
+        "name": "sentencing"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/political_science",
+        "name": "political science"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/public_policy",
+        "name": "public policy"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/social_science",
+        "name": "social science"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/penology",
+        "name": "penology"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/law_-_criminal_law_-_sentencing",
+        "name": "Law - Criminal Law - Sentencing"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/political_science_-_public_policy_-_general",
+        "name": "Political Science - Public Policy - General"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/social_science_-_penology",
+        "name": "Social Science - Penology"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/administration_of_criminal_justice",
+        "name": "Administration of Criminal justice"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/lawyers",
+        "name": "Lawyers"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/social_reformers",
+        "name": "Social reformers"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/biography",
+        "name": "Biography"
+      }
+    ],
+    "subject_people": [
+      {
+        "url": "https://openlibrary.org/subjects/person:bryan_stevenson",
+        "name": "Bryan Stevenson"
+      },
+      {
+        "url": "https://openlibrary.org/subjects/person:walter_mcmillian",
+        "name": "Walter McMillian"
+      }
+    ],
+    "key": "/books/OL26424423M",
+    "authors": [
+      {
+        "url": "https://openlibrary.org/authors/OL7399686A/Bryan_Stevenson",
+        "name": "Bryan Stevenson"
+      }
+    ],
+    "publish_date": "2015",
+    "excerpts": [
+      {
+        "comment": "first sentence",
+        "text": "I wasn't prepared to meet a condemned man."
+      }
+    ],
+    "publish_places": [
+      {
+        "name": "New York, USA"
+      }
+    ]
+  }
+}

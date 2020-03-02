@@ -6,9 +6,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.time.LocalDate;
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,15 +45,21 @@ public class UserController {
     /**
      * Find all {@link User}s.
      *
+     * @param name optional query param to find by the {@link User}'s name
      * @param username optional query param to find by the {@link User}'s username
+     * @param role optional query param to find by the {@link User}'s role
+     * @param birthDate optional query param to find by the {@link User}'s birthDate
      * @return the found {@link User}s
      */
     @GetMapping
-    public Iterable findAll(@RequestParam(required = false) String username) {
-        if (!isNullOrEmpty(username)){
-            return Arrays.asList(userRepository.findByUsername(username));
-        }
-        return userRepository.findAll();
+    public Page<User> findAll(
+        Pageable pageable,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String username,
+        @RequestParam(required = false) String role,
+        @RequestParam(required = false) LocalDate birthDate
+    ) {
+        return userRepository.findAllCustom(name, username, role, birthDate, pageable);
     };
 
     /**

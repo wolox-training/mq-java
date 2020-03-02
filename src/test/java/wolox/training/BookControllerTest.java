@@ -5,8 +5,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static wolox.training.utils.PropertyValidationUtils.asJsonString;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -42,6 +49,9 @@ public class BookControllerTest {
     private BookRepository mockBookRepository;
 
     @MockBean
+    private RestTemplateBuilder testRestTemplate;
+
+    @Autowired
     private OpenLibrary openLibrary;
 
     @WithMockUser()
@@ -65,20 +75,33 @@ public class BookControllerTest {
     public void whenGettingAllBooks_thenReturnsAllBooks() throws Exception {
         Book book1 = BookFactory.getDefaultBook("book1");
         Book book2 = BookFactory.getDefaultBook("book2");
-        Mockito.when(mockBookRepository.findAll()).thenReturn(
-            new ArrayList<Book>(Arrays.asList(book1, book2))
-        );
+
+        List<Book> books = new ArrayList<Book>(Arrays.asList(book1, book2));
+        Page<Book> pagedResponse = new PageImpl(books);
+        Mockito.when(mockBookRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            PageRequest.of(0, 20)
+        )).thenReturn(pagedResponse);
+
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/books")
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isMap())
             .andExpect(jsonPath(
-                String.format("$[?(@.title == \'%s\')]", book1.getTitle())).exists()
+                String.format("$.content.[?(@.title == \'%s\')]", book1.getTitle())).exists()
             )
             .andExpect(jsonPath(
-                String.format("$[?(@.title == \'%s\')]", book2.getTitle())).exists()
+                String.format("$.content.[?(@.title == \'%s\')]", book2.getTitle())).exists()
             );
     }
 
@@ -103,9 +126,18 @@ public class BookControllerTest {
     public void whenRequestingBooksWithTitleQueryParam_thenReturnsMatchingBooks() throws Exception {
         Book coolBook = BookFactory.getDefaultBook("someCoolBook");
         Book boringBook = BookFactory.getDefaultBook("someBoringBook");
-        Mockito.when(mockBookRepository.findByTitle(coolBook.getTitle())).thenReturn(
-            new ArrayList<Book>(Arrays.asList(coolBook))
-        );
+        Mockito.when(mockBookRepository.findAllCustom(
+            coolBook.getTitle(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            PageRequest.of(0, 20)
+        )).thenReturn(new PageImpl(new ArrayList<Book>(Arrays.asList(coolBook))));
 
         mockMvc.perform( MockMvcRequestBuilders
             .get("/api/books")
@@ -114,10 +146,82 @@ public class BookControllerTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath(
-                String.format("$[?(@.title == \'%s\')]", coolBook.getTitle())).exists()
+                String.format("$.content.[?(@.title == \'%s\')]", coolBook.getTitle())).exists()
             )
             .andExpect(jsonPath(
-                String.format("$[?(@.title == \'%s\')]", boringBook.getTitle())).doesNotExist()
+                String.format("$.content.[?(@.title == \'%s\')]", boringBook.getTitle())).doesNotExist()
             );
+    }
+
+    @WithMockUser()
+    @Test
+    public void whenRequestingBookWithPagesQueryParam_thenFiltersByPages() throws Exception {
+        Book coolBook = BookFactory.getDefaultBook("someCoolBook");
+        Book boringBook = new Book(
+            "Some boring book",
+            "DefaultAuthor",
+            "DefaultImage",
+            "DefaultSubtitle",
+            "DefaultPublisher",
+            "1994",
+            20000,
+            "Default isbn"
+        );
+        Mockito.when(mockBookRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            boringBook.getPages(),
+            null,
+            null,
+            PageRequest.of(0, 20)
+        )).thenReturn(new PageImpl(new ArrayList<Book>(Arrays.asList(boringBook))));
+
+        Mockito.when(mockBookRepository.findAllCustom(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            coolBook.getPages(),
+            null,
+            null,
+            PageRequest.of(0, 20)
+        )).thenReturn(new PageImpl(new ArrayList<Book>(Arrays.asList(coolBook))));
+
+        mockMvc.perform( MockMvcRequestBuilders
+            .get("/api/books")
+            .param("pages", Integer.toString(boringBook.getPages()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath(
+                String.format("$.content.[?(@.title == \'%s\')]", boringBook.getTitle())).exists()
+            )
+            .andExpect(jsonPath(
+                String.format("$[?(@.title == \'%s\')]", coolBook.getTitle())).doesNotExist()
+            );
+    }
+
+    @WithMockUser()
+    @Test
+    public void whenSearchingBookByIsbnFallsBackToOpenLibrary_thenReturnsNewSavedBook() throws Exception {
+        String theIsbn = "9780812984965";
+        Mockito.when(mockBookRepository.findByIsbn(theIsbn)).thenReturn(Optional.empty());
+        Book book = OpenLibrary.buildDTOFromJsonString(
+            theIsbn,
+            String.join("", Files.readAllLines(Paths.get("__files/ISBN_9780812984965.json")))
+        ).getAsBook();
+        Mockito.when(mockBookRepository.save(book)).thenReturn(book);
+        mockMvc.perform( MockMvcRequestBuilders
+            .get(String.format("/api/books/isbn/%s", theIsbn))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.title").value(book.getTitle()))
+            .andExpect(jsonPath("$.isbn").value(book.getIsbn()));
     }
 }
